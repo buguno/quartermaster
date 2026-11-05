@@ -1,0 +1,13 @@
+{% load i18n %}
+{% get_current_language as current_language %}
+{% get_available_languages as languages %}
+<form action="{% url 'core:set_language' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{% if request.method == 'GET' %}{{ request.get_full_path }}{% else %}/{% endif %}">
+  <select name="language" data-autosubmit aria-label="{% trans 'Language' %}"
+          class="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm text-stone-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
+    {% for code, name in languages %}
+    <option value="{{ code }}"{% if code == current_language %} selected{% endif %}>{{ name }}</option>
+    {% endfor %}
+  </select>
+</form>
