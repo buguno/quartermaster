@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Autonomy' %} · Quartermaster{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Autonomy' %}</h1>
+  <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'How long your stock lasts for the household. Expired batches are not counted.' %}</p>
+</div>
+
+<section class="grid gap-3 sm:grid-cols-3">
+  <div class="rounded-2xl border p-4 {% if result.days is not None %}border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40{% else %}border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900{% endif %}">
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Overall autonomy' %}</p>
+    <p class="mt-1 text-3xl font-semibold tabular-nums">{% if result.days is not None %}{{ result.days|floatformat:1 }} <span class="text-base font-normal">{% trans 'days' %}</span>{% else %}—{% endif %}</p>
+    <p class="text-xs text-stone-500 dark:text-stone-400">{% trans 'The lower of food and water' %}</p>
+  </div>
+  <div class="card p-4">
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Food' %}</p>
+    <p class="mt-1 text-3xl font-semibold tabular-nums">{% if result.food.days is not None %}{{ result.food.days|floatformat:1 }} <span class="text-base font-normal">{% trans 'days' %}</span>{% else %}—{% endif %}</p>
+    <p class="text-xs text-stone-500 dark:text-stone-400">{{ result.food.total|floatformat:0 }} kcal</p>
+  </div>
+  <div class="card p-4">
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Water' %}</p>
+    <p class="mt-1 text-3xl font-semibold tabular-nums">{% if result.water.days is not None %}{{ result.water.days|floatformat:1 }} <span class="text-base font-normal">{% trans 'days' %}</span>{% else %}—{% endif %}</p>
+    <p class="text-xs text-stone-500 dark:text-stone-400">{{ result.water.total|floatformat:1 }} L</p>
+  </div>
+</section>
+
+{% if result.food.days is None or result.water.days is None %}
+<p class="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+  {% trans 'To count an item, edit it and fill in its calories per unit (food) or mark it as drinking water.' %}
+</p>
+{% endif %}
+
+<div class="mt-6 grid gap-6 lg:grid-cols-2">
+  <section class="card overflow-hidden">
+    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800"><h2 class="font-semibold">{% trans 'Food, by calories' %}</h2></header>
+    {% if result.food.lines %}
+    <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+      {% for line in result.food.lines %}
+      <li class="flex items-center justify-between gap-3 px-4 py-2.5">
+        <a href="{{ line.item.get_absolute_url }}" class="truncate font-medium hover:underline">{{ line.item.name }}</a>
+        <span class="shrink-0 tabular-nums text-stone-500 dark:text-stone-400">{{ line.quantity|floatformat:"-3" }} {{ line.item.unit_symbol }} · {{ line.amount|floatformat:0 }} kcal</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No food counted yet.' %}</p>
+    {% endif %}
+    {% if result.food.expired_lines %}<p class="border-t border-stone-100 px-4 py-2 text-sm text-amber-700 dark:border-stone-800 dark:text-amber-400">{% blocktrans with count=result.food.expired_lines %}{{ count }} item(s) have expired stock that was left out.{% endblocktrans %}</p>{% endif %}
+  </section>
+
+  <section class="card overflow-hidden">
+    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800"><h2 class="font-semibold">{% trans 'Drinking water' %}</h2></header>
+    {% if result.water.lines %}
+    <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+      {% for line in result.water.lines %}
+      <li class="flex items-center justify-between gap-3 px-4 py-2.5">
+        <a href="{{ line.item.get_absolute_url }}" class="truncate font-medium hover:underline">{{ line.item.name }}</a>
+        <span class="shrink-0 tabular-nums text-stone-500 dark:text-stone-400">{{ line.quantity|floatformat:"-3" }} {{ line.item.unit_symbol }} · {{ line.amount|floatformat:1 }} L</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No water counted yet.' %}</p>
+    {% endif %}
+    {% if result.water.expired_lines %}<p class="border-t border-stone-100 px-4 py-2 text-sm text-amber-700 dark:border-stone-800 dark:text-amber-400">{% blocktrans with count=result.water.expired_lines %}{{ count }} item(s) have expired stock that was left out.{% endblocktrans %}</p>{% endif %}
+  </section>
+</div>
+
+<form method="post" class="card mt-6 space-y-4 p-5">
+  {% csrf_token %}
+  <h2 class="font-semibold">{% trans 'Household' %}</h2>
+  <div class="grid gap-4 sm:grid-cols-3">
+    {% include 'partials/form_fields.html' %}
+  </div>
+  <div class="flex justify-end"><button type="submit" class="btn-primary">{% trans 'Save' %}</button></div>
+</form>
+{% endblock %}
