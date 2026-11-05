@@ -1,0 +1,96 @@
+[project]
+name = "quartermaster"
+version = "1.0.0"
+description = ""
+authors = [
+    {name = "buguno",email = "brunnodesouzabezerra@gmail.com"}
+]
+license = "MIT"
+requires-python = ">=3.14, <4.0"
+
+dependencies = [
+    "django (>=6.1.3,<7.0.0)",
+    "psycopg[binary] (>=3.3.8,<4.0.0)",
+    "django-environ (>=0.14.0,<0.15.0)",
+    "gunicorn (>=26.2.0,<27.0.0)",
+    "whitenoise (>=6.12.0,<7.0.0)"
+]
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.17.3,<0.18.0)",
+    "pytest (>=9.2.0,<10.0.0)",
+    "pytest-cov (>=7.1.0,<8.0.0)",
+    "pytest-django (>=4.14.0,<5.0.0)",
+    "pytest-random-order (>=1.2.0,<2.0.0)",
+    "factory-boy (>=3.3.3,<4.0.0)",
+    "freezegun (>=1.5.5,<2.0.0)",
+    "testcontainers[postgres] (>=4.15.0,<5.0.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 79
+extend-exclude = ['migrations']
+
+[tool.ruff.lint]
+preview = true
+select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'DJ']
+
+[tool.ruff.lint.per-file-ignores]
+'manage.py' = ['PLC0415']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = 'config.settings'
+pythonpath = ['.']
+addopts = ['-p', 'no:warnings', '--cov=apps', '--cov=config', '--cov-context=test', '--cov-branch', '--random-order']
+
+[tool.coverage.run]
+omit = ['*/migrations/*', 'config/asgi.py', 'config/wsgi.py']
+
+[tool.poe]
+poetry_command = ""
+
+[tool.poe.tasks]
+lint = "ruff check"
+serve = "python manage.py runserver 0.0.0.0:8000"
+prod = "gunicorn config.wsgi:application --config gunicorn.conf.py"
+collectstatic = "python manage.py collectstatic --noinput"
+migrate = "python manage.py migrate"
+makemigrations = "python manage.py makemigrations"
+messages = "python manage.py makemessages -l pt_BR --no-obsolete --no-location"
+compilemessages = "python manage.py compilemessages"
+coverage = "coverage html --show-contexts"
+css = "bin/tailwindcss -i tailwind/input.css -o static/css/tailwind.css --minify"
+css-watch = "bin/tailwindcss -i tailwind/input.css -o static/css/tailwind.css --watch"
+
+[tool.poe.tasks.css-check]
+shell = "bin/tailwindcss -i tailwind/input.css -o \"${TMPDIR:-/tmp}/tailwind.check.css\" --minify && diff -q static/css/tailwind.css \"${TMPDIR:-/tmp}/tailwind.check.css\""
+
+[tool.poe.tasks.backup]
+shell = "pg_dump \"$DATABASE_URL\" > backup_$(date +%Y%m%d_%H%M%S).sql"
+
+[[tool.poe.tasks.format.sequence]]
+cmd = "ruff check --fix"
+
+[[tool.poe.tasks.format.sequence]]
+cmd = "ruff format"
+
+[[tool.poe.tasks.test.sequence]]
+ref = "lint"
+
+[[tool.poe.tasks.test.sequence]]
+cmd = "pytest -s -x -vv $POE_EXTRA_ARGS"
+
+[[tool.poe.tasks.test.sequence]]
+ref = "coverage"
