@@ -1,0 +1,65 @@
+{% load i18n static nav %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}"{% if request.user_profile %} data-theme="{{ request.user_profile.theme }}"{% endif %}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}Quartermaster{% endblock %}</title>
+  <script>
+    (function () {
+      try {
+        var root = document.documentElement;
+        var saved = root.dataset.theme; // signed-in users: stored in their profile
+        if (saved === 'system') localStorage.removeItem('theme');
+        else if (saved) localStorage.setItem('theme', saved);
+        var t = saved || localStorage.getItem('theme');
+        if (t === 'dark' || ((!t || t === 'system') && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          root.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
+  <script src="{% static 'js/theme.js' %}" defer></script>
+</head>
+<body class="min-h-screen bg-stone-100 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100">
+  {% block body %}
+  <div id="sidebar-overlay" class="fixed inset-0 z-20 hidden bg-black/50 data-open:block lg:hidden" data-sidebar-close></div>
+
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 flex w-64 -translate-x-full flex-col border-r border-stone-200 bg-white transition-transform duration-200 data-open:translate-x-0 lg:translate-x-0 dark:border-stone-800 dark:bg-stone-900">
+    <a href="{% url 'inventory:dashboard' %}" class="flex h-14 shrink-0 items-center gap-2 border-b border-stone-200 px-4 font-semibold tracking-tight dark:border-stone-800">
+      <span class="grid size-8 place-items-center rounded-lg bg-emerald-600 text-white"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8m18 0-9 5m9-5v8l-9 5m0-8L3 8m9 5v8M3 8v8l9 5"/></svg></span>
+      Quartermaster
+    </a>
+    <nav class="flex-1 space-y-1 overflow-y-auto p-3" aria-label="{% trans 'Main menu' %}">
+      {% include 'partials/nav_links.html' %}
+    </nav>
+    <div class="space-y-1 border-t border-stone-200 p-3 dark:border-stone-800">
+      {% if user.is_staff %}
+      <a href="{% url 'admin:index' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"><svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>{% trans 'Admin' %}</a>
+      {% endif %}
+      <a href="{% url 'core:settings' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm {% nav_class '/settings/' %}"><svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>{% trans 'Settings' %}</a>
+      <form method="post" action="{% url 'core:logout' %}" class="pt-2">
+        {% csrf_token %}
+        <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+          {% trans 'Log out' %} <span class="font-normal text-red-100">({{ user.get_username }})</span>
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="lg:pl-64">
+    <header class="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-stone-200 bg-white/80 px-4 backdrop-blur lg:hidden dark:border-stone-800 dark:bg-stone-900/80">
+      <button type="button" data-sidebar-toggle aria-controls="sidebar" aria-label="{% trans 'Open menu' %}" class="grid size-9 place-items-center rounded-lg text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <a href="{% url 'inventory:dashboard' %}" class="flex items-center gap-2 font-semibold tracking-tight"><span class="grid size-8 place-items-center rounded-lg bg-emerald-600 text-white"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8m18 0-9 5m9-5v8l-9 5m0-8L3 8m9 5v8M3 8v8l9 5"/></svg></span>Quartermaster</a>
+    </header>
+    <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      {% include 'partials/messages.html' %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% endblock %}
+</body>
+</html>
