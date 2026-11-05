@@ -1,0 +1,141 @@
+{% load i18n ages %}
+<div id="stock-panel" class="space-y-6">
+  <div id="flash">{% include 'partials/messages.html' %}</div>
+
+  <section class="grid gap-3 sm:grid-cols-3">
+    <div class="rounded-2xl border p-4 {% if low %}border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40{% else %}border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900{% endif %}">
+      <p class="text-sm {% if low %}text-red-800 dark:text-red-300{% else %}text-stone-500 dark:text-stone-400{% endif %}">{% trans 'Total stock' %}</p>
+      <p class="mt-1 text-3xl font-semibold tabular-nums {% if low %}text-red-900 dark:text-red-200{% endif %}">{{ total|floatformat:"-3" }} <span class="text-base font-normal">{{ item.unit_symbol }}</span></p>
+    </div>
+    <div class="card p-4">
+      <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Minimum stock' %}</p>
+      <p class="mt-1 text-3xl font-semibold tabular-nums">{{ item.min_stock|floatformat:"-3" }} <span class="text-base font-normal">{{ item.unit_symbol }}</span></p>
+    </div>
+    <div class="card p-4">
+      <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Use first (FEFO)' %}</p>
+      {% if next_batch %}
+      <p class="mt-1 text-lg font-semibold">{{ next_batch.quantity|floatformat:"-3" }} {{ item.unit_symbol }} · {{ next_batch.location.name }}</p>
+      <p class="text-sm text-stone-500 dark:text-stone-400">{% if next_batch.expires_at %}{% trans 'Expires at' %} {{ next_batch.expires_at|date:'SHORT_DATE_FORMAT' }}{% else %}{% trans 'No expiry date' %}{% endif %}{% if next_batch.packaged_at %} · {% trans 'Packaged' %} {{ next_batch.packaged_at|date:'SHORT_DATE_FORMAT' }}{% endif %}</p>
+      {% else %}
+      <p class="mt-1 text-stone-400">—</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="grid gap-6 lg:grid-cols-2">
+    <form method="post" action="{% url 'inventory:item_entry' item.pk %}" class="card space-y-3 p-4"
+          hx-post="{% url 'inventory:item_entry' item.pk %}" hx-target="#stock-panel" hx-swap="outerHTML">
+      {% csrf_token %}
+      <h2 class="font-semibold">{% trans 'Add stock' %}</h2>
+      {% include 'partials/form_fields.html' with form=entry_form %}
+      <button type="submit" class="btn-primary w-full">{% trans 'Register entry' %}</button>
+    </form>
+
+    <form method="post" action="{% url 'inventory:item_exit' item.pk %}" class="card space-y-3 p-4 self-start"
+          hx-post="{% url 'inventory:item_exit' item.pk %}" hx-target="#stock-panel" hx-swap="outerHTML">
+      {% csrf_token %}
+      <h2 class="font-semibold">{% trans 'Remove stock' %}</h2>
+      <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Leave it on automatic to take the batch that expires first, then the oldest packaged. Or choose where to take from.' %}</p>
+      {% include 'partials/form_fields.html' with form=exit_form %}
+      <button type="submit" class="btn-primary w-full">{% trans 'Register exit' %}</button>
+    </form>
+  </section>
+
+  <section class="card overflow-hidden">
+    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800"><h2 class="font-semibold">{% trans 'Batches' %}</h2></header>
+    {% if batches %}
+    <table class="w-full text-sm">
+      <thead class="text-left text-stone-500 dark:text-stone-400">
+        <tr>
+          <th class="px-4 py-2 font-medium">{% trans 'Location' %}</th>
+          <th class="hidden px-4 py-2 font-medium sm:table-cell">{% trans 'Lot code' %}</th>
+          <th class="hidden px-4 py-2 font-medium md:table-cell">{% trans 'Packaged / made' %}</th>
+          <th class="px-4 py-2 font-medium">{% trans 'Expires at' %}</th>
+          <th class="px-4 py-2 text-right font-medium">{% trans 'Quantity' %}</th>
+          <th class="px-4 py-2"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+        {% for batch in batches %}
+        <tr class="align-top">
+          <td class="px-4 py-3">{{ batch.location.name }}</td>
+          <td class="hidden px-4 py-3 text-stone-500 sm:table-cell dark:text-stone-400">{{ batch.lot_code|default:"—" }}</td>
+          <td class="hidden px-4 py-3 md:table-cell">
+            {% if batch.packaged_at %}
+            <p>{% trans 'Packaged' %} {{ batch.packaged_at|date:'SHORT_DATE_FORMAT' }}</p>
+            <p class="text-xs text-stone-500 dark:text-stone-400">{% blocktrans with age=batch.packaged_at|age %}{{ age }} ago{% endblocktrans %}</p>
+            {% endif %}
+            {% if batch.produced_at %}
+            <p>{% trans 'Made' %} {{ batch.produced_at|date:'SHORT_DATE_FORMAT' }}</p>
+            {% if not batch.packaged_at %}<p class="text-xs text-stone-500 dark:text-stone-400">{% blocktrans with age=batch.produced_at|age %}{{ age }} ago{% endblocktrans %}</p>{% endif %}
+            {% endif %}
+            {% if not batch.packaged_at and not batch.produced_at %}<span class="text-stone-400">—</span>{% endif %}
+          </td>
+          <td class="px-4 py-3">
+            {% if batch.expires_at %}
+            {{ batch.expires_at|date:'SHORT_DATE_FORMAT' }}
+            {% if batch.days_left < 0 %}<span class="badge badge-red ml-1">{% trans 'Expired' %}</span>
+            {% elif batch.expiring %}<span class="badge badge-amber ml-1">{{ batch.days_left }} d</span>{% endif %}
+            {% else %}<span class="text-stone-400">—</span>{% endif %}
+          </td>
+          <td class="px-4 py-3 text-right tabular-nums">{{ batch.quantity|floatformat:"-3" }} {{ item.unit_symbol }}</td>
+          <td class="px-4 py-3">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button type="button" class="btn-secondary" data-modal-open="transfer-{{ batch.pk }}">{% trans 'Transfer' %}</button>
+              <button type="button" class="btn-secondary" data-modal-open="adjust-{{ batch.pk }}">{% trans 'Adjust' %}</button>
+            </div>
+
+            <dialog id="transfer-{{ batch.pk }}" class="modal"{% if batch.transfer_form.errors %} data-open{% endif %}>
+              <form method="post" action="{% url 'inventory:batch_transfer' batch.pk %}" class="space-y-4 p-5 text-left"
+                    hx-post="{% url 'inventory:batch_transfer' batch.pk %}" hx-target="#stock-panel" hx-swap="outerHTML">
+                {% csrf_token %}
+                <div>
+                  <h3 class="text-lg font-semibold">{% trans 'Transfer stock' %}</h3>
+                  <p class="text-sm text-stone-500 dark:text-stone-400">{{ item.name }} · {{ batch.location.name }} · {{ batch.quantity|floatformat:"-3" }} {{ item.unit_symbol }}</p>
+                </div>
+                {% include 'partials/form_fields.html' with form=batch.transfer_form %}
+                <div class="flex justify-end gap-2 pt-1">
+                  <button type="button" class="btn-secondary" data-modal-close>{% trans 'Cancel' %}</button>
+                  <button type="submit" class="btn-primary">{% trans 'Transfer' %}</button>
+                </div>
+              </form>
+            </dialog>
+
+            <dialog id="adjust-{{ batch.pk }}" class="modal"{% if batch.adjust_form.errors %} data-open{% endif %}>
+              <form method="post" action="{% url 'inventory:batch_adjust' batch.pk %}" class="space-y-4 p-5 text-left"
+                    hx-post="{% url 'inventory:batch_adjust' batch.pk %}" hx-target="#stock-panel" hx-swap="outerHTML">
+                {% csrf_token %}
+                <div>
+                  <h3 class="text-lg font-semibold">{% trans 'Adjust batch' %}</h3>
+                  <p class="text-sm text-stone-500 dark:text-stone-400">{{ item.name }} · {{ batch.location.name }} · {{ batch.quantity|floatformat:"-3" }} {{ item.unit_symbol }}</p>
+                </div>
+                {% include 'partials/form_fields.html' with form=batch.adjust_form %}
+                <div class="flex justify-end gap-2 pt-1">
+                  <button type="button" class="btn-secondary" data-modal-close>{% trans 'Cancel' %}</button>
+                  <button type="submit" class="btn-primary">{% trans 'Save' %}</button>
+                </div>
+              </form>
+            </dialog>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No stock on hand.' %}</p>
+    {% endif %}
+  </section>
+
+  <section class="card overflow-hidden">
+    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800"><h2 class="font-semibold">{% trans 'Recent movements' %}</h2></header>
+    {% if movements %}
+    <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+      {% for movement in movements %}
+      {% include 'inventory/partials/movement_row.html' with show_item=False %}
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No movements yet.' %}</p>
+    {% endif %}
+  </section>
+</div>

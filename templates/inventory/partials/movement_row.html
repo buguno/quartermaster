@@ -1,0 +1,12 @@
+{% load i18n %}
+<li class="flex items-center justify-between gap-3 px-4 py-3">
+  <div class="min-w-0">
+    <p class="truncate">
+      {% if show_item %}<a href="{{ movement.batch.item.get_absolute_url }}" class="font-medium hover:underline">{{ movement.batch.item.name }}</a> · {% endif %}
+      <span class="badge {% if movement.kind == 'entry' %}badge-green{% elif movement.kind == 'exit' %}badge-amber{% else %}badge-gray{% endif %}">{{ movement.get_kind_display }}</span>
+      {{ movement.batch.location.name }}
+    </p>
+    <p class="truncate text-stone-500 dark:text-stone-400">{{ movement.created_at|date:'SHORT_DATETIME_FORMAT' }}{% if movement.user %} · {% blocktrans with user=movement.user.get_username %}by {{ user }}{% endblocktrans %}{% endif %}{% if movement.reason %} · {{ movement.reason }}{% endif %}</p>
+  </div>
+  <p class="shrink-0 font-semibold tabular-nums {% if movement.quantity > 0 %}text-emerald-700 dark:text-emerald-400{% else %}text-red-700 dark:text-red-400{% endif %}">{% if movement.quantity > 0 %}+{% endif %}{{ movement.quantity|floatformat:"-3" }} {{ movement.batch.item.unit_symbol }}</p>
+</li>

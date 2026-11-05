@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Items' %} · Quartermaster{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Items' %}</h1>
+  <div class="flex gap-2">
+    <a href="{% url 'inventory:export_stock' %}" class="btn-secondary">{% trans 'Export CSV' %}</a>
+    <a href="{% url 'inventory:item_create' %}" class="btn-primary">{% trans 'New item' %}</a>
+  </div>
+</div>
+
+<form method="get" class="mb-4 flex flex-col gap-2 sm:flex-row"
+      hx-get="{% url 'inventory:item_list' %}" hx-target="#item-results" hx-push-url="true"
+      hx-trigger="input changed delay:300ms from:#q, change from:#category">
+  <input id="q" type="search" name="q" value="{{ query }}" placeholder="{% trans 'Search items…' %}" class="input sm:max-w-xs" autocomplete="off">
+  <select id="category" name="category" class="input sm:max-w-xs">
+    <option value="">{% trans 'All categories' %}</option>
+    {% for category in categories %}
+    <option value="{{ category.pk }}"{% if category.pk == category_id %} selected{% endif %}>{{ category.name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn-secondary">{% trans 'Search' %}</button>
+</form>
+
+<div id="item-results" class="card overflow-hidden">
+  {% include 'inventory/partials/item_results.html' %}
+</div>
+{% endblock %}

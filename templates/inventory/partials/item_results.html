@@ -1,0 +1,33 @@
+{% load i18n %}
+<table class="w-full text-sm">
+  <thead class="text-left text-stone-500 dark:text-stone-400">
+    <tr>
+      <th class="px-4 py-2 font-medium">{% trans 'Item' %}</th>
+      <th class="hidden px-4 py-2 font-medium sm:table-cell">{% trans 'Category' %}</th>
+      <th class="px-4 py-2 text-right font-medium">{% trans 'Stock' %}</th>
+      <th class="hidden px-4 py-2 text-right font-medium md:table-cell">{% trans 'Minimum' %}</th>
+      <th class="hidden px-4 py-2 font-medium md:table-cell">{% trans 'Next expiry' %}</th>
+      <th class="px-4 py-2"></th>
+    </tr>
+  </thead>
+  <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+    {% for item in page %}
+    <tr>
+      <td class="px-4 py-3"><a href="{{ item.get_absolute_url }}" class="font-medium hover:underline">{{ item.name }}</a></td>
+      <td class="hidden px-4 py-3 text-stone-500 sm:table-cell dark:text-stone-400">{{ item.category.name }}</td>
+      <td class="px-4 py-3 text-right tabular-nums">{{ item.total|floatformat:"-3" }} {{ item.unit_symbol }}</td>
+      <td class="hidden px-4 py-3 text-right tabular-nums text-stone-500 md:table-cell dark:text-stone-400">{{ item.min_stock|floatformat:"-3" }}</td>
+      <td class="hidden px-4 py-3 md:table-cell">{% if item.next_expiry %}{{ item.next_expiry|date:'SHORT_DATE_FORMAT' }}{% else %}<span class="text-stone-400">—</span>{% endif %}</td>
+      <td class="px-4 py-3">
+        <div class="flex justify-end gap-1.5">
+          {% if item.low %}<span class="badge badge-red">{% trans 'Low' %}</span>{% endif %}
+          {% if item.expiring %}<span class="badge badge-amber">{% trans 'Expiring' %}</span>{% endif %}
+        </div>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="px-4 py-8 text-center text-stone-500 dark:text-stone-400">{% trans 'No items found.' %}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% include 'partials/pagination.html' %}
