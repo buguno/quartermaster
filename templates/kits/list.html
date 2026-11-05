@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Kits' %} · Quartermaster{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Kits' %}</h1>
+  <a href="{% url 'kits:create' %}" class="btn-primary">{% trans 'New kit' %}</a>
+</div>
+{% if statuses %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for status in statuses %}
+  <a href="{{ status.kit.get_absolute_url }}" class="card block p-4 transition hover:border-emerald-600">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h2 class="truncate font-semibold">{{ status.kit.name }}</h2>
+        <p class="truncate text-sm text-stone-500 dark:text-stone-400">{{ status.kit.location.name }}</p>
+      </div>
+      {% if status.ready %}<span class="badge badge-green">{% trans 'Ready' %}</span>
+      {% elif status.lines %}<span class="badge badge-amber">{% trans 'Incomplete' %}</span>
+      {% else %}<span class="badge badge-gray">{% trans 'Empty list' %}</span>{% endif %}
+    </div>
+    <div class="mt-4 h-2 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
+      <div class="h-full rounded-full {% if status.ready %}bg-emerald-500{% else %}bg-amber-500{% endif %}" style="width: {{ status.percent }}%"></div>
+    </div>
+    <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">{% blocktrans with done=status.complete_count total=status.lines|length %}{{ done }} of {{ total }} items complete{% endblocktrans %}</p>
+    {% if status.needs_attention %}<p class="mt-1 text-sm text-amber-700 dark:text-amber-400">{% trans 'Has expired or expiring items' %}</p>{% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card px-4 py-10 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No kits yet.' %}</div>
+{% endif %}
+{% endblock %}
