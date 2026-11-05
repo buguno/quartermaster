@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Ammunition' %} · Quartermaster{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Ammunition' %}</h1>
+  <div class="flex gap-2">
+    <a href="{% url 'ammunition:usage_list' %}" class="btn-secondary">{% trans 'Usage history' %}</a>
+    <a href="{% url 'ammunition:create' %}" class="btn-primary">{% trans 'New ammunition' %}</a>
+  </div>
+</div>
+
+{% if summary %}
+<section class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+  {% for row in summary %}
+  <div class="card p-4">
+    <p class="text-sm text-stone-500 dark:text-stone-400">{{ row.caliber }}</p>
+    <p class="mt-1 text-2xl font-semibold tabular-nums">{{ row.rounds|floatformat:"-3" }}</p>
+    <p class="text-xs text-stone-500 dark:text-stone-400">{% trans 'rounds on hand' %}</p>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<form method="get" class="mb-4 flex flex-col gap-2 sm:flex-row">
+  <input type="search" name="q" value="{{ query }}" placeholder="{% trans 'Search name, caliber or manufacturer…' %}" class="input sm:max-w-sm">
+  <select name="caliber" class="input sm:max-w-xs">
+    <option value="">{% trans 'All calibers' %}</option>
+    {% for value in calibers %}<option value="{{ value }}"{% if value == caliber %} selected{% endif %}>{{ value }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="btn-secondary">{% trans 'Search' %}</button>
+</form>
+
+<div class="card overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="text-left text-stone-500 dark:text-stone-400">
+      <tr>
+        <th class="px-4 py-2 font-medium">{% trans 'Ammunition' %}</th>
+        <th class="px-4 py-2 font-medium">{% trans 'Caliber' %}</th>
+        <th class="hidden px-4 py-2 text-right font-medium md:table-cell">{% trans 'Bullet weight' %}</th>
+        <th class="hidden px-4 py-2 font-medium md:table-cell">{% trans 'Manufacturer' %}</th>
+        <th class="px-4 py-2 text-right font-medium">{% trans 'Rounds' %}</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+      {% for item in page %}
+      <tr>
+        <td class="px-4 py-3">
+          <a href="{{ item.get_absolute_url }}" class="font-medium hover:underline">{{ item.name }}</a>
+          {% if item.ammunition.bullet_type %}<p class="text-stone-500 dark:text-stone-400">{{ item.ammunition.bullet_type }}</p>{% endif %}
+        </td>
+        <td class="px-4 py-3">{{ item.ammunition.caliber }}</td>
+        <td class="hidden px-4 py-3 text-right tabular-nums md:table-cell">{% if item.ammunition.bullet_weight %}{{ item.ammunition.bullet_weight|floatformat:"-1" }} gr{% else %}<span class="text-stone-400">—</span>{% endif %}</td>
+        <td class="hidden px-4 py-3 text-stone-500 md:table-cell dark:text-stone-400">{{ item.ammunition.manufacturer|default:"—" }}</td>
+        <td class="px-4 py-3 text-right tabular-nums">
+          {{ item.total|floatformat:"-3" }}
+          {% if item.low %}<span class="badge badge-red ml-1">{% trans 'Low' %}</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="px-4 py-8 text-center text-stone-500 dark:text-stone-400">{% trans 'No ammunition yet.' %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% include 'partials/pagination.html' %}
+</div>
+{% endblock %}
