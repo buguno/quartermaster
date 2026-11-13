@@ -1,7 +1,7 @@
-from http import HTTPStatus
 from typing import override
 
 from django.apps import AppConfig
+from django.utils.module_loading import autodiscover_modules
 
 
 class CoreConfig(AppConfig):
@@ -9,11 +9,7 @@ class CoreConfig(AppConfig):
 
     @override
     def ready(self):
-        from apps.core import exceptions  # noqa: PLC0415
-        from apps.core.middleware import (  # noqa: PLC0415
-            register_error_status,
-        )
-
-        register_error_status(
-            exceptions.BackupError, HTTPStatus.UNPROCESSABLE_ENTITY
-        )
+        # Every app can have a `registry.py` that plugs it into `core` and
+        # `inventory` (error statuses, alerts, dashboard widgets, ...). Apps
+        # are not imported by the ones they plug into, so they are loaded here.
+        autodiscover_modules('registry')
