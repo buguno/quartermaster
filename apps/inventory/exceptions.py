@@ -19,3 +19,7 @@ class InvalidDates(DomainError):
 
 class InvalidTransfer(DomainError):
     pass
+
+
+class InvalidImport(DomainError):
+    pass
