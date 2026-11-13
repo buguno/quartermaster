@@ -1,40 +1,41 @@
+from collections.abc import Mapping
 from http import HTTPStatus
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import login, update_session_auth_hash
+from django.contrib.auth.decorators import login_not_required
+from django.forms import BaseForm
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
-from apps.core import alerts, backup
+from apps.core import alerts, backup, services
 from apps.core.decorators import superuser_required
 from apps.core.forms import (
     BackupForm,
+    FirstUserForm,
     PasswordForm,
     PreferencesForm,
     RestoreForm,
 )
 
 
-def _render_settings(  # noqa: PLR0913
-    request,
-    *,
-    preferences_form=None,
-    password_form=None,
-    backup_form=None,
-    restore_form=None,
-    status=HTTPStatus.OK,
+def _render_settings(
+    request, forms: Mapping[str, BaseForm] | None = None, status=HTTPStatus.OK
 ):
+    """The settings page; `forms` replaces the forms that have errors."""
+    forms = forms or {}
     context = {
-        'preferences_form': preferences_form
+        'preferences_form': forms.get('preferences')
         or PreferencesForm(instance=request.user_profile),
-        'password_form': password_form or PasswordForm(request.user),
-        'backup_form': backup_form or BackupForm(),
-        'restore_form': restore_form or RestoreForm(),
+        'password_form': forms.get('password') or PasswordForm(request.user),
+        'backup_form': forms.get('backup') or BackupForm(),
+        'restore_form': forms.get('restore') or RestoreForm(),
     }
+
     return render(request, 'core/settings.html', context, status=status)
 
 
@@ -58,9 +59,7 @@ def account_settings(request):
     form = PreferencesForm(request.POST, instance=request.user_profile)
     if not form.is_valid():
         return _render_settings(
-            request,
-            preferences_form=form,
-            status=HTTPStatus.UNPROCESSABLE_ENTITY,
+            request, {'preferences': form}, HTTPStatus.UNPROCESSABLE_ENTITY
         )
 
     profile = form.save()
@@ -77,9 +76,7 @@ def change_password(request):
     form = PasswordForm(request.user, request.POST)
     if not form.is_valid():
         return _render_settings(
-            request,
-            password_form=form,
-            status=HTTPStatus.UNPROCESSABLE_ENTITY,
+            request, {'password': form}, HTTPStatus.UNPROCESSABLE_ENTITY
         )
 
     user = form.save()
@@ -94,9 +91,7 @@ def backup_export(request):
     form = BackupForm(request.POST)
     if not form.is_valid():
         return _render_settings(
-            request,
-            backup_form=form,
-            status=HTTPStatus.UNPROCESSABLE_ENTITY,
+            request, {'backup': form}, HTTPStatus.UNPROCESSABLE_ENTITY
         )
 
     data = backup.export_backup(form.cleaned_data['passphrase'])
@@ -113,9 +108,7 @@ def backup_restore(request):
     form = RestoreForm(request.POST, request.FILES)
     if not form.is_valid():
         return _render_settings(
-            request,
-            restore_form=form,
-            status=HTTPStatus.UNPROCESSABLE_ENTITY,
+            request, {'restore': form}, HTTPStatus.UNPROCESSABLE_ENTITY
         )
 
     data = form.cleaned_data
@@ -129,3 +122,28 @@ def notifications(request):
     return render(
         request, 'core/notifications.html', {'alerts': alerts.collect_alerts()}
     )
+
+
+@login_not_required
+def setup(request):
+    """Create the first user. Only exists while there are no users."""
+    if services.has_users():
+        return redirect('core:login')
+
+    services.announce_setup_code(request.build_absolute_uri())
+    posted = request.method == 'POST'
+    form = FirstUserForm(request.POST if posted else None)
+
+    if posted and form.is_valid():
+        user = services.create_first_admin(
+            form.cleaned_data['username'],
+            form.cleaned_data['password1'],
+        )
+        login(
+            request, user, backend='django.contrib.auth.backends.ModelBackend'
+        )
+        messages.success(request, _('Welcome! Your account is ready.'))
+        return redirect('inventory:dashboard')
+
+    status = HTTPStatus.UNPROCESSABLE_ENTITY if posted else HTTPStatus.OK
+    return render(request, 'core/setup.html', {'form': form}, status=status)
