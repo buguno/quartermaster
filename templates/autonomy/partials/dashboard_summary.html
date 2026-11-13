@@ -1,0 +1,25 @@
+{% load i18n %}
+<section class="card mt-6 overflow-hidden">
+  <header class="flex items-center justify-between gap-3 border-b border-stone-200/80 px-4 py-3 dark:border-white/10">
+    <div>
+      <h2 class="font-semibold">{% trans 'Autonomy' %}</h2>
+      <p class="text-sm text-stone-500 dark:text-stone-400">{% blocktrans %}Days of supplies for the household. A full ring is {{ goal_days }} days.{% endblocktrans %}</p>
+    </div>
+    <a href="{% url 'autonomy:index' %}" class="text-sm text-emerald-700 hover:underline dark:text-emerald-400">{% trans 'Details' %}</a>
+  </header>
+  <div class="grid grid-cols-3 gap-2 p-4">
+    {% for ring in rings %}
+    <div class="flex flex-col items-center text-center">
+      <div class="relative size-24 sm:size-28">
+        <div class="ring size-full" style="--pct: {{ ring.percent }}; --ring-color: {{ ring.color }}"></div>
+        <div class="absolute inset-0 grid place-items-center">
+          {% if ring.days is not None %}
+          <span><span class="block text-xl font-semibold tabular-nums sm:text-2xl">{{ ring.days|floatformat:0 }}</span><span class="block text-xs text-stone-500 dark:text-stone-400">{% trans 'days' %}</span></span>
+          {% else %}<span class="text-stone-400">—</span>{% endif %}
+        </div>
+      </div>
+      <p class="mt-2 text-sm font-medium">{{ ring.label }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
