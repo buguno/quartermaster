@@ -54,6 +54,8 @@ cover/
 
 # Translations
 *.mo
+# Compiled translations are committed (the tests check they match the .po).
+!locale/**/*.mo
 *.pot
 
 # Django stuff:
