@@ -13,6 +13,7 @@ from apps.ammunition.forms import (
     restrict_to_round_units,
 )
 from apps.ammunition.models import Ammunition, AmmunitionUsage
+from apps.ammunition.services import UsageDetails
 from apps.inventory.forms import BasicItemForm
 from apps.inventory.models import Item
 
@@ -34,12 +35,9 @@ def ammunition_list(request):
     query = request.GET.get('q', '').strip()
     caliber = request.GET.get('caliber', '')
     items = services.list_ammunition(query=query, caliber=caliber)
-    page = _page(request, items, PAGE_SIZE)
-    for item in page:
-        item.low = item.total < item.min_stock
 
     context = {
-        'page': page,
+        'page': _page(request, items, PAGE_SIZE),
         'query': query,
         'caliber': caliber,
         'calibers': services.calibers(),
@@ -102,13 +100,13 @@ def usage_create(request, pk):
 
     if posted and form.is_valid():
         data = form.cleaned_data
+        details = UsageDetails(data.get('used_at'), data.get('notes', ''))
         services.record_usage(
             data['batch'],
             data['rounds'],
             data['reason'],
-            used_at=data['used_at'],
-            notes=data['notes'],
-            user=request.user,
+            details,
+            request.user,
         )
         messages.success(request, _('Usage recorded.'))
         return redirect(item)
