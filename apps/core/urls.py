@@ -9,6 +9,7 @@ from apps.core.forms import LoginForm
 app_name = 'core'
 
 urlpatterns = [
+    path('setup/', views.setup, name='setup'),
     path('settings/', views.account_settings, name='settings'),
     path('settings/password/', views.change_password, name='change_password'),
     path('settings/backup/export/', views.backup_export, name='backup_export'),
