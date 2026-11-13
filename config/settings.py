@@ -12,6 +12,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = ENVIRONMENT == 'development'
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 EXPIRY_WARNING_DAYS = env.int('EXPIRY_WARNING_DAYS', default=90)
+CURRENCY_SYMBOL = env.str('CURRENCY_SYMBOL', default='R$')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -36,7 +37,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.core.middleware.FirstUserSetupMiddleware',
     'apps.core.middleware.UserPreferencesMiddleware',
+    'apps.core.middleware.ReadOnlyMiddleware',
     'django.contrib.auth.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -69,16 +72,25 @@ DATABASES['default']['CONN_MAX_AGE'] = 60
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',  # noqa: E501
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'UserAttributeSimilarityValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',  # noqa: E501
+        'NAME': (
+            'django.contrib.auth.password_validation.MinimumLengthValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',  # noqa: E501
+        'NAME': (
+            'django.contrib.auth.password_validation.CommonPasswordValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',  # noqa: E501
+        'NAME': (
+            'django.contrib.auth.password_validation.NumericPasswordValidator'
+        ),
     },
 ]
 
@@ -91,6 +103,9 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 LOCALE_PATHS = [BASE_DIR / 'locale']
 USE_TZ = True
+
+# Until a first user exists, every page redirects to /setup/ (see core).
+FIRST_USER_SETUP_ENABLED = True
 
 LOGIN_URL = 'core:login'
 LOGIN_REDIRECT_URL = 'inventory:dashboard'

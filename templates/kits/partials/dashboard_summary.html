@@ -1,23 +1,23 @@
 {% load i18n %}
 <section class="card mt-6 overflow-hidden">
-  <header class="flex items-center justify-between gap-3 border-b border-stone-200 px-4 py-3 dark:border-stone-800">
+  <header class="flex items-center justify-between gap-3 border-b border-stone-200/80 px-4 py-3 dark:border-white/10">
     <div>
       <h2 class="font-semibold">{% trans 'Kits' %}</h2>
       <p class="text-sm text-stone-500 dark:text-stone-400">{% blocktrans %}{{ ready_count }} of {{ total }} kits ready{% endblocktrans %}</p>
     </div>
     <a href="{% url 'kits:list' %}" class="text-sm text-emerald-700 hover:underline dark:text-emerald-400">{% trans 'See all' %}</a>
   </header>
-  <ul class="divide-y divide-stone-100 dark:divide-stone-800">
+  <ul class="divide-y divide-stone-100 dark:divide-white/5">
     {% for status in statuses %}
     <li>
-      <a href="{{ status.kit.get_absolute_url }}" class="block px-4 py-3 hover:bg-stone-50 dark:hover:bg-stone-800/50">
+      <a href="{{ status.kit.get_absolute_url }}" class="block px-4 py-3 hover:bg-stone-50/80 dark:hover:bg-white/5">
         <div class="flex items-center justify-between gap-3">
           <p class="truncate font-medium">{{ status.kit.name }}</p>
           {% if status.ready %}<span class="badge badge-green">{% trans 'Ready' %}</span>
           {% elif status.lines %}<span class="badge badge-amber">{% trans 'Incomplete' %}</span>
           {% else %}<span class="badge badge-gray">{% trans 'Empty list' %}</span>{% endif %}
         </div>
-        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
+        <div class="track mt-2">
           <div class="h-full rounded-full {% if status.ready %}bg-emerald-500{% else %}bg-amber-500{% endif %}" style="width: {{ status.percent }}%"></div>
         </div>
         <p class="mt-1.5 text-sm text-stone-500 dark:text-stone-400">
@@ -29,6 +29,6 @@
     {% endfor %}
   </ul>
   {% if hidden_count %}
-  <p class="border-t border-stone-100 px-4 py-2 text-sm text-stone-500 dark:border-stone-800 dark:text-stone-400">{% blocktrans with count=hidden_count %}and {{ count }} more{% endblocktrans %}</p>
+  <p class="border-t border-stone-100 px-4 py-2 text-sm text-stone-500 dark:border-white/10 dark:text-stone-400">{% blocktrans with count=hidden_count %}and {{ count }} more{% endblocktrans %}</p>
   {% endif %}
 </section>

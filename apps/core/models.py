@@ -29,6 +29,14 @@ class UserProfile(models.Model):
         _('Theme'), max_length=10, choices=Theme, default=Theme.SYSTEM
     )
     language = models.CharField(_('Language'), max_length=10)
+    read_only = models.BooleanField(
+        _('read-only account'),
+        default=False,
+        help_text=_(
+            'Can look at everything but cannot change anything. '
+            'Does not apply to superusers.'
+        ),
+    )
 
     class Meta:
         verbose_name = _('user profile')

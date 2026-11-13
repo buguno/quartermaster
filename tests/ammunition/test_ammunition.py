@@ -10,11 +10,13 @@ from freezegun import freeze_time
 
 from apps.ammunition import services
 from apps.ammunition.exceptions import NotAmmunition
-from apps.ammunition.forms import AmmunitionForm, UsageForm
+from apps.ammunition.forms import AmmunitionForm, LotChoiceField, UsageForm
 from apps.ammunition.models import Ammunition, AmmunitionUsage
+from apps.ammunition.services import UsageDetails
+from apps.core.forms import field_of
 from apps.core.middleware import DomainErrorMiddleware
 from apps.inventory.exceptions import InsufficientStock, InvalidQuantity
-from apps.inventory.models import Item, StockMovement
+from apps.inventory.models import Batch, Item, StockMovement
 from tests.inventory.factories import BatchFactory, ItemFactory
 
 
@@ -39,9 +41,6 @@ def _lot(item, location, quantity, lot_code=''):
 
 def _detail_url(item):
     return reverse('inventory:item_detail', args=[item.pk])
-
-
-# --- Models ---------------------------------------------------------------
 
 
 def test_str(category, location):
@@ -91,9 +90,6 @@ def test_usage_rounds_must_be_positive(category, location):
         )
 
 
-# --- Services -------------------------------------------------------------
-
-
 @freeze_time('2026-11-05 15:00')
 def test_record_usage_takes_stock_from_the_chosen_lot(
     category, location, user
@@ -103,7 +99,7 @@ def test_record_usage_takes_stock_from_the_chosen_lot(
     chosen = _lot(item, location, 100, 'B2')
 
     usage = services.record_usage(
-        chosen, 30, 'match', notes='regional', user=user
+        chosen, 30, 'match', UsageDetails(notes='regional'), user=user
     )
 
     older.refresh_from_db()
@@ -125,7 +121,9 @@ def test_record_usage_takes_stock_from_the_chosen_lot(
 def test_record_usage_with_an_explicit_date(category, location):
     lot = _lot(_ammo_item(category), location, 10)
 
-    usage = services.record_usage(lot, 1, 'training', used_at=date(2026, 3, 1))
+    usage = services.record_usage(
+        lot, 1, 'training', UsageDetails(used_at=date(2026, 3, 1))
+    )
 
     assert usage.used_at == date(2026, 3, 1)
     assert usage.user is None
@@ -147,7 +145,7 @@ def test_record_usage_cannot_exceed_the_lot(category, location):
         services.record_usage(lot, 11, 'training')
 
     lot.refresh_from_db()
-    assert lot.quantity == Decimal(10)  # noqa: PLR2004
+    assert lot.quantity == Decimal(10)
     assert not AmmunitionUsage.objects.exists()
 
 
@@ -173,7 +171,7 @@ def test_list_ammunition_filters(category, location):
     assert [i.name for i in by_name] == ['Fiocchi 9mm']
     assert [i.name for i in by_caliber_text] == ['CBC .38']
     assert [i.name for i in by_caliber] == ['Fiocchi 9mm']
-    assert by_caliber[0].total == Decimal(50)  # noqa: PLR2004
+    assert by_caliber[0].total == Decimal(50)
 
 
 def test_calibers_and_summary(category, location):
@@ -202,12 +200,12 @@ def test_usage_listing_and_totals(category, location):
     nobody = services.list_usage(query='zzz')
     bad_reason = services.list_usage(reason='nope')
 
-    assert services.total_rounds(everything) == 30  # noqa: PLR2004
-    assert services.total_rounds(matches) == 20  # noqa: PLR2004
-    assert services.total_rounds(by_name) == 30  # noqa: PLR2004
-    assert services.total_rounds(by_caliber) == 30  # noqa: PLR2004
+    assert services.total_rounds(everything) == 30
+    assert services.total_rounds(matches) == 20
+    assert services.total_rounds(by_name) == 30
+    assert services.total_rounds(by_caliber) == 30
     assert services.total_rounds(nobody) == 0
-    assert services.total_rounds(bad_reason) == 30  # noqa: PLR2004
+    assert services.total_rounds(bad_reason) == 30
     assert len(services.recent_usage(item, 1)) == 1
 
 
@@ -222,14 +220,11 @@ def test_create_ammunition_is_all_or_nothing(category):
 
 
 def test_middleware_maps_not_ammunition_to_unprocessable():
-    response = DomainErrorMiddleware.process_exception(
+    response = DomainErrorMiddleware.respond(
         RequestFactory().post('/'), NotAmmunition('no')
     )
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-
-
-# --- Forms ----------------------------------------------------------------
 
 
 def test_ammunition_form_requires_round_units(category):
@@ -252,8 +247,9 @@ def test_usage_form_lists_only_lots_with_rounds(category, location):
 
     form = UsageForm(item=item)
 
-    assert list(form.fields['batch'].queryset) == [full]
-    assert form.fields['batch'].label_from_instance(full) == (
+    batch_field = field_of(form, 'batch', LotChoiceField)
+    assert list(batch_field.queryset or []) == [full]
+    assert batch_field.label_from_instance(full) == (
         f'A1 · {location.name} · 10'
     )
 
@@ -261,7 +257,7 @@ def test_usage_form_lists_only_lots_with_rounds(category, location):
 def test_usage_form_labels_lots_without_a_code(category, location):
     lot = _lot(_ammo_item(category), location, 10)
 
-    label = UsageForm._lot_label(lot)  # noqa: SLF001
+    label = LotChoiceField(Batch.objects.none()).label_from_instance(lot)
 
     assert label.startswith('sem código de lote')
 
@@ -282,9 +278,6 @@ def test_usage_form_rejects_more_rounds_than_the_lot(category, location):
 
     assert not form.is_valid()
     assert 'rounds' in form.errors
-
-
-# --- Views ----------------------------------------------------------------
 
 
 def test_list_page(auth_client, category, location):
@@ -446,7 +439,7 @@ def test_record_usage_page(auth_client, category, location, user):
     assert page.status_code == HTTPStatus.OK
     assert response.status_code == HTTPStatus.FOUND
     assert response.url == item.get_absolute_url()
-    assert lot.quantity == Decimal(30)  # noqa: PLR2004
+    assert lot.quantity == Decimal(30)
     assert (usage.rounds, usage.used_at, usage.user) == (
         20,
         date(2026, 5, 1),
@@ -472,7 +465,7 @@ def test_record_usage_page_rejects_too_many_rounds(
 
     lot.refresh_from_db()
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-    assert lot.quantity == Decimal(10)  # noqa: PLR2004
+    assert lot.quantity == Decimal(10)
     assert not AmmunitionUsage.objects.exists()
 
 
@@ -487,7 +480,7 @@ def test_record_usage_page_needs_an_ammunition_item(auth_client, item):
 def test_usage_history_page(auth_client, category, location):
     item = _ammo_item(category)
     lot = _lot(item, location, 100, 'A1')
-    services.record_usage(lot, 10, 'training', notes='warm-up')
+    services.record_usage(lot, 10, 'training', UsageDetails(notes='warm-up'))
     services.record_usage(lot, 25, 'match')
 
     everything = auth_client.get(reverse('ammunition:usage_list'))
@@ -495,8 +488,8 @@ def test_usage_history_page(auth_client, category, location):
         reverse('ammunition:usage_list'), {'reason': 'match'}
     )
 
-    assert everything.context['total_rounds'] == 35  # noqa: PLR2004
-    assert matches.context['total_rounds'] == 25  # noqa: PLR2004
+    assert everything.context['total_rounds'] == 35
+    assert matches.context['total_rounds'] == 25
     assert 'warm-up' in everything.content.decode()
 
 

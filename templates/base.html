@@ -1,10 +1,10 @@
 {% load i18n static nav %}<!doctype html>
-<html lang="{{ LANGUAGE_CODE }}"{% if request.user_profile %} data-theme="{{ request.user_profile.theme }}"{% endif %}>
+<html lang="{{ LANGUAGE_CODE }}"{% if request.user_profile %} data-theme="{{ request.user_profile.theme }}"{% endif %}{% if request.read_only %} data-readonly{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>{% block title %}Quartermaster{% endblock %}</title>
+  <title>{% block title %}V.A.U.L.T{% endblock %}</title>
   <script>
     (function () {
       try {
@@ -19,43 +19,91 @@
       } catch (e) {}
     })();
   </script>
+  <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="48x48">
+  <link rel="icon" type="image/png" href="{% static 'img/favicon-32.png' %}" sizes="32x32">
+  <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
   <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
   <script src="{% static 'js/app.js' %}" defer></script>
   <script src="{% static 'js/theme.js' %}" defer></script>
 </head>
-<body class="min-h-screen bg-stone-100 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100">
+<body class="app-bg min-h-screen text-stone-900 antialiased dark:text-stone-100">
   {% block body %}
-  <div id="sidebar-overlay" class="fixed inset-0 z-20 hidden bg-black/50 data-open:block lg:hidden" data-sidebar-close></div>
+  <div id="sidebar-overlay" class="fixed inset-0 z-20 hidden bg-black/50 data-open:block lg:hidden print:hidden" data-sidebar-close></div>
 
-  <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 flex w-64 -translate-x-full flex-col border-r border-stone-200 bg-white transition-transform duration-200 data-open:translate-x-0 lg:translate-x-0 dark:border-stone-800 dark:bg-stone-900">
-    <a href="{% url 'inventory:dashboard' %}" class="flex h-14 shrink-0 items-center gap-2 border-b border-stone-200 px-4 font-semibold tracking-tight dark:border-stone-800">
-      <span class="grid size-8 place-items-center rounded-lg bg-emerald-600 text-white"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8m18 0-9 5m9-5v8l-9 5m0-8L3 8m9 5v8M3 8v8l9 5"/></svg></span>
-      Quartermaster
-    </a>
-    <nav class="flex-1 space-y-1 overflow-y-auto p-3" aria-label="{% trans 'Main menu' %}">
-      {% include 'partials/nav_links.html' %}
-    </nav>
-    <div class="space-y-1 border-t border-stone-200 p-3 dark:border-stone-800">
-      {% if user.is_staff %}
-      <a href="{% url 'admin:index' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"><svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>{% trans 'Admin' %}</a>
-      {% endif %}
-      <a href="{% url 'core:settings' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm {% nav_class '/settings/' %}"><svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>{% trans 'Settings' %}</a>
-      <form method="post" action="{% url 'core:logout' %}" class="pt-2">
-        {% csrf_token %}
-        <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
-          {% trans 'Log out' %} <span class="font-normal text-red-100">({{ user.get_username }})</span>
-        </button>
-      </form>
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-72 -translate-x-full p-3 transition-transform duration-200 data-open:translate-x-0 lg:translate-x-0 print:hidden">
+    <div class="flex h-full flex-col rounded-2xl border border-stone-200/80 bg-white/90 shadow-sm backdrop-blur dark:border-white/10 dark:bg-stone-900/75">
+      <a href="{% url 'inventory:dashboard' %}" class="flex h-16 shrink-0 items-center gap-3 px-4">
+        <img src="{% static 'img/icon-192.png' %}" alt="" width="36" height="36" class="size-9">
+        <span class="leading-tight">
+          <span class="block font-semibold tracking-tight">V.A.U.L.T</span>
+          <span class="block text-xs text-stone-500 dark:text-stone-400">{% trans 'Preparedness inventory' %}</span>
+        </span>
+      </a>
+      <nav class="flex-1 space-y-1 overflow-y-auto px-3 pb-3" aria-label="{% trans 'Main menu' %}">
+        {% include 'partials/nav_links.html' %}
+      </nav>
+      <div class="space-y-3 p-3">
+        {% if alert_count %}
+        <a href="{% url 'core:notifications' %}" class="block rounded-xl border border-amber-300/70 bg-amber-50 p-3 text-sm hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:bg-amber-500/15">
+          <span class="block text-xs font-medium uppercase tracking-wide text-amber-800 dark:text-amber-300">{% trans 'Needs attention' %}</span>
+          <span class="mt-0.5 block text-2xl font-semibold tabular-nums text-amber-900 dark:text-amber-200">{{ alert_count }}</span>
+          <span class="block text-xs text-amber-800/80 dark:text-amber-300/80">{% trans 'Expiring, low or incomplete' %}</span>
+        </a>
+        {% else %}
+        <div class="rounded-xl border border-emerald-300/70 bg-emerald-50 p-3 text-sm dark:border-emerald-500/30 dark:bg-emerald-500/10">
+          <span class="block text-xs font-medium uppercase tracking-wide text-emerald-800 dark:text-emerald-300">{% trans 'All good' %}</span>
+          <span class="block text-xs text-emerald-800/80 dark:text-emerald-300/80">{% trans 'Nothing needs attention.' %}</span>
+        </div>
+        {% endif %}
+        <div class="flex items-center gap-2 border-t border-stone-200/80 pt-3 dark:border-white/10">
+          <a href="{% url 'core:settings' %}" class="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl p-1.5 {% nav_class '/settings/' %}" title="{% trans 'Settings' %}">
+            <span class="grid size-9 shrink-0 place-items-center rounded-full bg-emerald-600/15 text-sm font-semibold text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300">{{ user.get_username|slice:":1"|upper }}</span>
+            <span class="min-w-0 leading-tight">
+              <span class="block truncate text-sm font-medium">{{ user.get_username }}</span>
+              <span class="block truncate text-xs text-stone-500 dark:text-stone-400">{% if request.read_only %}{% trans 'Read-only' %}{% elif user.is_superuser %}{% trans 'Administrator' %}{% else %}{% trans 'Settings' %}{% endif %}</span>
+            </span>
+          </a>
+          {% if user.is_staff %}
+          <a href="{% url 'admin:index' %}" title="{% trans 'Admin' %}" aria-label="{% trans 'Admin' %}" class="grid size-9 shrink-0 place-items-center rounded-xl text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-white/10"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></a>
+          {% endif %}
+          <form method="post" action="{% url 'core:logout' %}" data-allow>
+            {% csrf_token %}
+            <button type="submit" title="{% trans 'Log out' %}" aria-label="{% trans 'Log out' %} ({{ user.get_username }})" class="grid size-9 place-items-center rounded-xl bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg></button>
+          </form>
+        </div>
+      </div>
     </div>
   </aside>
 
-  <div class="lg:pl-64">
-    <header class="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-stone-200 bg-white/80 px-4 backdrop-blur lg:hidden dark:border-stone-800 dark:bg-stone-900/80">
-      <button type="button" data-sidebar-toggle aria-controls="sidebar" aria-label="{% trans 'Open menu' %}" class="grid size-9 place-items-center rounded-lg text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-      <a href="{% url 'inventory:dashboard' %}" class="flex items-center gap-2 font-semibold tracking-tight"><span class="grid size-8 place-items-center rounded-lg bg-emerald-600 text-white"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8m18 0-9 5m9-5v8l-9 5m0-8L3 8m9 5v8M3 8v8l9 5"/></svg></span>Quartermaster</a>
+  <div class="lg:pl-72">
+    <header class="sticky top-0 z-10 px-3 pt-3 sm:px-6 print:hidden">
+      <div class="card flex h-14 items-center gap-2 px-2.5 sm:gap-3 sm:px-3">
+        <button type="button" data-sidebar-toggle aria-controls="sidebar" aria-label="{% trans 'Open menu' %}" class="grid size-9 shrink-0 place-items-center rounded-lg text-stone-600 hover:bg-stone-100 lg:hidden dark:text-stone-300 dark:hover:bg-white/10"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+        <form method="get" action="{% url 'inventory:item_list' %}" role="search" class="relative min-w-0 flex-1 sm:max-w-xl">
+          <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" name="q" placeholder="{% trans 'Search items…' %}" aria-label="{% trans 'Search items…' %}" autocomplete="off" class="block w-full rounded-xl border border-stone-200 bg-stone-50/80 py-2 pl-9 pr-3 text-sm placeholder-stone-400 focus:border-emerald-600 focus:outline-2 focus:outline-emerald-600 dark:border-white/10 dark:bg-black/25">
+        </form>
+        <div class="ml-auto flex shrink-0 items-center gap-1.5">
+          <details class="relative" data-menu data-write>
+            <summary title="{% trans 'Quick add' %}" aria-label="{% trans 'Quick add' %}" class="grid size-9 cursor-pointer list-none place-items-center rounded-xl bg-emerald-600 text-white shadow-sm hover:bg-emerald-700"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+            <div class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-stone-200 bg-white p-1 shadow-lg dark:border-white/10 dark:bg-stone-900">
+              <a href="{% url 'inventory:item_create' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-stone-100 dark:hover:bg-white/10">{% trans 'New item' %}</a>
+              <a href="{% url 'kits:create' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-stone-100 dark:hover:bg-white/10">{% trans 'New kit' %}</a>
+              <a href="{% url 'inventory:stock_import' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-stone-100 dark:hover:bg-white/10">{% trans 'Import CSV' %}</a>
+            </div>
+          </details>
+          <a href="{% url 'core:notifications' %}" title="{% trans 'Notifications' %}" aria-label="{% trans 'Notifications' %}" class="relative grid size-9 place-items-center rounded-xl text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-white/10">
+            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            {% if alert_count %}<span class="absolute right-1 top-1 size-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-stone-900"></span>{% endif %}
+          </a>
+        </div>
+      </div>
     </header>
-    <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+    <main class="mx-auto max-w-7xl px-3 py-6 sm:px-6 sm:py-8 print:p-0">
+      {% if request.read_only %}
+      <p class="mb-4 rounded-xl border border-sky-300/70 bg-sky-50 px-4 py-2.5 text-sm text-sky-900 print:hidden dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-200">{% trans 'Read-only account: you can look at everything but cannot change anything.' %}</p>
+      {% endif %}
       {% include 'partials/messages.html' %}
       {% block content %}{% endblock %}
     </main>

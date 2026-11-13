@@ -1,6 +1,6 @@
 {% load i18n %}
 {% if page.paginator.num_pages > 1 %}
-<nav class="flex items-center justify-between border-t border-stone-200 px-4 py-3 text-sm dark:border-stone-800" aria-label="{% trans 'Pagination' %}">
+<nav class="flex items-center justify-between border-t border-stone-200 px-4 py-3 text-sm dark:border-white/10" aria-label="{% trans 'Pagination' %}">
   <p class="text-stone-500 dark:text-stone-400">{% blocktrans with number=page.number total=page.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}</p>
   <div class="flex gap-2">
     {% if page.has_previous %}<a class="btn-secondary" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page.previous_page_number }}">{% trans 'Previous' %}</a>{% endif %}

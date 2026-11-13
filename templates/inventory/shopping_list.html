@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load i18n money %}
+{% block title %}{% trans 'Shopping list' %} · V.A.U.L.T{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Shopping list' %}</h1>
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Everything below its minimum stock, with the amount to buy.' %} <span class="hidden print:inline">· {% trans 'l, F j, Y' as long_date %}{{ today|date:long_date }}</span></p>
+  </div>
+  {% if lines %}<button type="button" data-print class="btn-secondary print:hidden">{% trans 'Print' %}</button>{% endif %}
+</div>
+
+<section class="card overflow-hidden">
+  {% if lines %}
+  <table class="w-full text-sm">
+    <thead class="text-left text-stone-500 dark:text-stone-400">
+      <tr>
+        <th class="px-4 py-2 font-medium">{% trans 'Item' %}</th>
+        <th class="hidden px-4 py-2 font-medium sm:table-cell">{% trans 'Category' %}</th>
+        <th class="px-4 py-2 text-right font-medium">{% trans 'Have' %}</th>
+        <th class="hidden px-4 py-2 text-right font-medium sm:table-cell">{% trans 'Minimum' %}</th>
+        <th class="px-4 py-2 text-right font-medium">{% trans 'Buy' %}</th>
+        <th class="hidden px-4 py-2 text-right font-medium md:table-cell">{% trans 'Estimate' %}</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-stone-100 dark:divide-white/5">
+      {% for line in lines %}
+      <tr>
+        <td class="px-4 py-3"><a href="{{ line.item.get_absolute_url }}" class="font-medium hover:underline">{{ line.item.name }}</a></td>
+        <td class="hidden px-4 py-3 text-stone-500 sm:table-cell dark:text-stone-400">{{ line.item.category.name }}</td>
+        <td class="px-4 py-3 text-right tabular-nums {% if not line.total %}font-semibold text-red-700 dark:text-red-400{% endif %}">{{ line.total|floatformat:"-3" }} {{ line.item.unit_symbol }}</td>
+        <td class="hidden px-4 py-3 text-right tabular-nums text-stone-500 sm:table-cell dark:text-stone-400">{{ line.item.min_stock|floatformat:"-3" }}</td>
+        <td class="px-4 py-3 text-right font-semibold tabular-nums">{{ line.missing|floatformat:"-3" }} {{ line.item.unit_symbol }}</td>
+        <td class="hidden px-4 py-3 text-right tabular-nums text-stone-500 md:table-cell dark:text-stone-400">{% if line.estimate is not None %}{{ line.estimate|money }}{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    {% if estimate %}
+    <tfoot class="border-t border-stone-200 dark:border-white/10">
+      <tr>
+        <td colspan="5" class="px-4 py-3 text-right font-medium">{% trans 'Estimated total' %}{% if unpriced %} <span class="font-normal text-stone-500 dark:text-stone-400">({% blocktrans count n=unpriced %}{{ n }} item without a known price{% plural %}{{ n }} items without a known price{% endblocktrans %})</span>{% endif %}</td>
+        <td class="px-4 py-3 text-right font-semibold tabular-nums">{{ estimate|money }}</td>
+      </tr>
+    </tfoot>
+    {% endif %}
+  </table>
+  {% else %}
+  <p class="px-4 py-12 text-center text-stone-500 dark:text-stone-400">{% trans 'Nothing to buy: every item is at or above its minimum.' %}</p>
+  {% endif %}
+</section>
+{% endblock %}

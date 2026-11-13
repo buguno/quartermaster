@@ -2,14 +2,12 @@ from http import HTTPStatus
 
 import pytest
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.urls import reverse
 
 from apps.core import services
 from apps.core.models import UserProfile
-
-PASSWORD = 's3cret-pass'
-NEW_PASSWORD = 'brand-new-pass-42'
+from tests.fakes import NEW_PASSWORD, PASSWORD, fake
 
 
 def _settings_url():
@@ -18,9 +16,6 @@ def _settings_url():
 
 def _use_language(client, language):
     client.cookies.load({settings.LANGUAGE_COOKIE_NAME: language})
-
-
-# --- Profile --------------------------------------------------------------
 
 
 def test_profile_is_created_on_first_visit(auth_client, user):
@@ -78,9 +73,6 @@ def test_anonymous_pages_have_no_saved_theme(client, db):
 
     assert 'data-theme=' not in page
     assert 'data-theme-toggle' in page
-
-
-# --- Settings page --------------------------------------------------------
 
 
 def test_settings_requires_login(client, db):
@@ -161,9 +153,6 @@ def test_invalid_preferences_are_rejected(auth_client, user, data):
     assert response.context['preferences_form'].errors
 
 
-# --- Password -------------------------------------------------------------
-
-
 def _password_data(**overrides):
     data = {
         'old_password': PASSWORD,
@@ -233,11 +222,10 @@ def test_change_password_requires_post(auth_client):
 
 
 def test_users_only_change_their_own_password(auth_client, user, db):
-    other = get_user_model().objects.create_user(
-        username='bia', password='other-pass-99'
-    )
+    other_password = fake.password(length=20)
+    other = User.objects.create_user(username='bia', password=other_password)
 
     auth_client.post(reverse('core:change_password'), _password_data())
 
     other.refresh_from_db()
-    assert other.check_password('other-pass-99')
+    assert other.check_password(other_password)

@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 from django.urls import reverse
 
+from tests.fakes import PASSWORD
+
 
 def test_dashboard_requires_login(client):
     url = reverse('inventory:dashboard')
@@ -29,7 +31,7 @@ def test_login_page_is_public(client):
 def test_login_with_valid_credentials(client, user):
     response = client.post(
         reverse('core:login'),
-        {'username': user.username, 'password': 's3cret-pass'},
+        {'username': user.username, 'password': PASSWORD},
     )
 
     assert response.status_code == HTTPStatus.FOUND

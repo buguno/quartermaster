@@ -1,7 +1,7 @@
 {% load i18n %}
 {% get_current_language as current_language %}
 {% get_available_languages as languages %}
-<form action="{% url 'core:set_language' %}" method="post">
+<form action="{% url 'core:set_language' %}" method="post" data-allow>
   {% csrf_token %}
   <input type="hidden" name="next" value="{% if request.method == 'GET' %}{{ request.get_full_path }}{% else %}/{% endif %}">
   <select name="language" data-autosubmit aria-label="{% trans 'Language' %}"

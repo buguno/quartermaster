@@ -12,12 +12,16 @@ class Teapot(DomainError):
 
 def _handle(exception, **headers):
     request = RequestFactory().post('/', **headers)
-    middleware = DomainErrorMiddleware(lambda request: None)
-    return middleware.process_exception(request, exception)
+    return DomainErrorMiddleware.respond(request, exception)
 
 
 def test_ignores_other_exceptions():
-    assert _handle(ValueError('boom')) is None
+    request = RequestFactory().post('/')
+
+    assert (
+        DomainErrorMiddleware.process_exception(request, ValueError('boom'))
+        is None
+    )
 
 
 def test_unregistered_domain_error_is_bad_request():

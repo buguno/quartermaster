@@ -1,5 +1,6 @@
 import csv
-from datetime import timedelta
+from dataclasses import dataclass
+from datetime import date, timedelta
 from decimal import Decimal
 from http import HTTPStatus
 
@@ -10,20 +11,22 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy, ngettext
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, ListView, UpdateView
 
 from apps.core.htmx import is_htmx
-from apps.inventory import extensions, services
+from apps.inventory import extensions, imports, services
+from apps.inventory import insights as insight_data
 from apps.inventory.forms import (
     AdjustForm,
     CategoryForm,
     EntryForm,
     ExitForm,
+    ImportForm,
     ItemForm,
     LocationForm,
     TransferForm,
@@ -35,6 +38,7 @@ from apps.inventory.models import (
     Location,
     StockMovement,
 )
+from apps.inventory.services import EntryDetails
 
 PAGE_SIZE = 20
 MOVEMENT_PAGE_SIZE = 30
@@ -61,61 +65,61 @@ def _plain(quantity: Decimal) -> str:
     return format(quantity.normalize(), 'f')
 
 
-def _expiry_limit():
+def _expiry_limit() -> date:
     return timezone.localdate() + timedelta(days=settings.EXPIRY_WARNING_DAYS)
 
 
-# --- Dashboard ------------------------------------------------------------
+MORNING_UNTIL = 12
+AFTERNOON_UNTIL = 18
+
+
+def _greeting(name: str, hour: int) -> str:
+    if hour < MORNING_UNTIL:
+        return _('Good morning, %(name)s') % {'name': name}
+
+    if hour < AFTERNOON_UNTIL:
+        return _('Good afternoon, %(name)s') % {'name': name}
+
+    return _('Good evening, %(name)s') % {'name': name}
 
 
 def dashboard(request):
-    today = timezone.localdate()
-    expiring = services.expiring_batches(today=today)
+    expiring = services.expiring_batches()
     low_stock = services.low_stock_items()
-
-    expiring_list = list(expiring[:DASHBOARD_LIST_LIMIT])
-    for batch in expiring_list:
-        batch.days_left = (batch.expires_at - today).days
-
-    low_stock_list = list(low_stock[:DASHBOARD_LIST_LIMIT])
-    for item in low_stock_list:
-        item.percent = int(item.total / item.min_stock * Decimal(100))
+    categories = list(services.category_summary())
+    user = request.user
 
     context = {
         **services.inventory_totals(),
-        'today': today,
+        'today': timezone.localdate(),
+        'greeting': _greeting(
+            user.first_name or user.get_username(),
+            timezone.localtime().hour,
+        ),
         'warning_days': settings.EXPIRY_WARNING_DAYS,
-        'expiring': expiring_list,
+        'expiring': expiring[:DASHBOARD_LIST_LIMIT],
         'expiring_count': expiring.count(),
-        'low_stock': low_stock_list,
+        'low_stock': low_stock[:DASHBOARD_LIST_LIMIT],
         'low_stock_count': low_stock.count(),
-        'categories': services.category_summary(),
+        'categories': categories,
+        'biggest_category': max((c.item_count for c in categories), default=0),
         'widgets': extensions.render_dashboard_widgets(request),
     }
+
     return render(request, 'inventory/dashboard.html', context)
-
-
-# --- Items ----------------------------------------------------------------
 
 
 def item_list(request):
     query = request.GET.get('q', '').strip()
     category_id = _int_or_none(request.GET.get('category', ''))
-    items = services.items_with_stock(query=query, category_id=category_id)
-    page = _page(request, items, PAGE_SIZE)
-
-    limit = _expiry_limit()
-    for item in page:
-        item.low = item.total < item.min_stock
-        item.expiring = item.next_expiry is not None and (
-            item.next_expiry <= limit
-        )
+    items = services.items_with_stock(query, category_id)
 
     context = {
-        'page': page,
+        'page': _page(request, items, PAGE_SIZE),
         'query': query,
         'category_id': category_id,
         'categories': Category.objects.all(),
+        'expiry_limit': _expiry_limit(),
         'querystring': _querystring(request),
     }
     template = (
@@ -123,19 +127,22 @@ def item_list(request):
         if is_htmx(request)
         else 'inventory/item_list.html'
     )
+
     return render(request, template, context)
 
 
 class FormPageMixin(SuccessMessageMixin):
+    """Create and update pages that share the `form.html` template.
+
+    The template reads `title` and `get_cancel_url` from the view itself.
+    """
+
     template_name = 'inventory/form.html'
     title = ''
     cancel_url = ''
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = self.title
-        context['cancel_url'] = self.cancel_url
-        return context
+    def get_cancel_url(self) -> str:
+        return str(self.cancel_url)
 
 
 class ItemCreate(FormPageMixin, CreateView):
@@ -152,10 +159,8 @@ class ItemUpdate(FormPageMixin, UpdateView):
     title = gettext_lazy('Edit item')
     success_message = gettext_lazy('Item updated.')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['cancel_url'] = self.object.get_absolute_url()
-        return context
+    def get_cancel_url(self) -> str:
+        return self.object.get_absolute_url()
 
 
 @require_POST
@@ -166,59 +171,91 @@ def item_delete(request, pk):
     return redirect('inventory:item_list')
 
 
-# --- Stock operations (item detail) ---------------------------------------
+@dataclass
+class StockForms:
+    """Forms to show again because their submit came back with errors."""
+
+    entry: EntryForm | None = None
+    exit: ExitForm | None = None
+    batch_id: int | None = None
+    adjust: AdjustForm | None = None
+    transfer: TransferForm | None = None
 
 
-def _stock_response(  # noqa: PLR0913
-    request,
-    item,
-    *,
-    status=HTTPStatus.OK,
-    entry_form=None,
-    exit_form=None,
-    form_batch_id=None,
-    adjust_form=None,
-    transfer_form=None,
-):
+@dataclass(frozen=True)
+class BatchRow:
+    """A batch as the item page shows it, with its own dialog forms."""
+
+    batch: Batch
+    reserved: bool
+    days_left: int | None
+    expiring: bool
+    adjust_form: AdjustForm
+    transfer_form: TransferForm
+
+
+def _batch_rows(item: Item, forms: StockForms) -> list[BatchRow]:
     today = timezone.localdate()
     limit = _expiry_limit()
-    batches = list(services.batches_in_stock(item))
-    for batch in batches:
-        if batch.expires_at:
-            batch.days_left = (batch.expires_at - today).days
-            batch.expiring = batch.expires_at <= limit
-        is_target = batch.pk == form_batch_id
-        batch.adjust_form = (
-            adjust_form
-            if is_target and adjust_form
-            else AdjustForm(initial={'new_quantity': _plain(batch.quantity)})
-        )
-        batch.transfer_form = (
-            transfer_form
-            if is_target and transfer_form
-            else TransferForm(
-                batch=batch, initial={'quantity': _plain(batch.quantity)}
+    reserved = set(
+        extensions.reserved_locations().values_list('pk', flat=True)
+    )
+    rows = []
+
+    for batch in services.batches_in_stock(item):
+        has_errors = batch.pk == forms.batch_id
+        expires_at = batch.expires_at
+        quantity = {'quantity': _plain(batch.quantity)}
+
+        rows.append(
+            BatchRow(
+                batch=batch,
+                reserved=batch.location_id in reserved,
+                days_left=(expires_at - today).days if expires_at else None,
+                expiring=bool(expires_at and expires_at <= limit),
+                adjust_form=(
+                    forms.adjust
+                    if has_errors and forms.adjust
+                    else AdjustForm(
+                        initial={'new_quantity': _plain(batch.quantity)}
+                    )
+                ),
+                transfer_form=(
+                    forms.transfer
+                    if has_errors and forms.transfer
+                    else TransferForm(batch=batch, initial=quantity)
+                ),
             )
         )
 
+    return rows
+
+
+def _stock_response(request, item, forms=None, status=HTTPStatus.OK):
+    forms = forms or StockForms()
+    rows = _batch_rows(item, forms)
     total = services.get_stock(item)
+
     context = {
         'item': item,
         'total': total,
         'low': total < item.min_stock,
-        'batches': batches,
-        'next_batch': batches[0] if batches else None,
-        'entry_form': entry_form or EntryForm(),
-        'exit_form': exit_form or ExitForm(item=item),
+        'rows': rows,
+        'next_batch': next((r.batch for r in rows if not r.reserved), None),
+        'entry_form': forms.entry or EntryForm(),
+        'exit_form': forms.exit or ExitForm(item=item),
         'movements': services.recent_movements(item, RECENT_MOVEMENTS),
     }
+
     if is_htmx(request):
         template = 'inventory/partials/stock_panel.html'
     else:
         template = 'inventory/item_detail.html'
         context['panels'] = extensions.render_panels(request, item)
+
         if not context['panels']:
             context['attach_links'] = extensions.attach_links(item)
+
     return render(request, template, context, status=status)
 
 
@@ -238,25 +275,28 @@ def _after_success(request, item, message):
 def item_entry(request, pk):
     item = get_object_or_404(Item, pk=pk)
     form = EntryForm(request.POST)
+
     if not form.is_valid():
         return _stock_response(
             request,
             item,
-            status=HTTPStatus.UNPROCESSABLE_ENTITY,
-            entry_form=form,
+            StockForms(entry=form),
+            HTTPStatus.UNPROCESSABLE_ENTITY,
         )
+
     data = form.cleaned_data
-    services.add_stock(
-        item,
-        data['location'],
-        data['quantity'],
-        expires_at=data['expires_at'],
-        produced_at=data['produced_at'],
-        packaged_at=data['packaged_at'],
-        lot_code=data['lot_code'],
-        reason=data['reason'],
-        user=request.user,
+    details = EntryDetails(
+        expires_at=data.get('expires_at'),
+        produced_at=data.get('produced_at'),
+        packaged_at=data.get('packaged_at'),
+        lot_code=data.get('lot_code', ''),
+        unit_cost=data.get('unit_cost'),
+        reason=data.get('reason', ''),
     )
+    services.add_stock(
+        item, data['location'], data['quantity'], details, request.user
+    )
+
     return _after_success(request, item, _('Entry recorded.'))
 
 
@@ -264,20 +304,24 @@ def item_entry(request, pk):
 def item_exit(request, pk):
     item = get_object_or_404(Item, pk=pk)
     form = ExitForm(request.POST, item=item)
+
     if not form.is_valid():
         return _stock_response(
             request,
             item,
-            status=HTTPStatus.UNPROCESSABLE_ENTITY,
-            exit_form=form,
+            StockForms(exit=form),
+            HTTPStatus.UNPROCESSABLE_ENTITY,
         )
+
+    data = form.cleaned_data
     services.remove_stock(
         item,
-        form.cleaned_data['quantity'],
-        location=form.cleaned_data['location'],
-        reason=form.cleaned_data['reason'],
-        user=request.user,
+        data['quantity'],
+        data.get('location'),
+        data.get('reason', ''),
+        request.user,
     )
+
     return _after_success(request, item, _('Exit recorded.'))
 
 
@@ -285,20 +329,20 @@ def item_exit(request, pk):
 def batch_adjust(request, pk):
     batch = get_object_or_404(Batch.objects.select_related('item'), pk=pk)
     form = AdjustForm(request.POST)
+
     if not form.is_valid():
         return _stock_response(
             request,
             batch.item,
-            status=HTTPStatus.UNPROCESSABLE_ENTITY,
-            form_batch_id=batch.pk,
-            adjust_form=form,
+            StockForms(batch_id=batch.pk, adjust=form),
+            HTTPStatus.UNPROCESSABLE_ENTITY,
         )
+
+    data = form.cleaned_data
     services.adjust_batch(
-        batch,
-        form.cleaned_data['new_quantity'],
-        reason=form.cleaned_data['reason'],
-        user=request.user,
+        batch, data['new_quantity'], data.get('reason', ''), request.user
     )
+
     return _after_success(request, batch.item, _('Batch adjusted.'))
 
 
@@ -308,25 +352,25 @@ def batch_transfer(request, pk):
         Batch.objects.select_related('item', 'location'), pk=pk
     )
     form = TransferForm(request.POST, batch=batch)
+
     if not form.is_valid():
         return _stock_response(
             request,
             batch.item,
-            status=HTTPStatus.UNPROCESSABLE_ENTITY,
-            form_batch_id=batch.pk,
-            transfer_form=form,
+            StockForms(batch_id=batch.pk, transfer=form),
+            HTTPStatus.UNPROCESSABLE_ENTITY,
         )
+
+    data = form.cleaned_data
     services.transfer_stock(
         batch,
-        form.cleaned_data['location'],
-        form.cleaned_data['quantity'],
-        reason=form.cleaned_data['reason'],
-        user=request.user,
+        data['location'],
+        data['quantity'],
+        data.get('reason', ''),
+        request.user,
     )
+
     return _after_success(request, batch.item, _('Stock transferred.'))
-
-
-# --- Movements ------------------------------------------------------------
 
 
 def movement_list(request):
@@ -341,9 +385,6 @@ def movement_list(request):
         'querystring': _querystring(request),
     }
     return render(request, 'inventory/movement_list.html', context)
-
-
-# --- Categories and locations ---------------------------------------------
 
 
 class CategoryList(ListView):
@@ -418,9 +459,6 @@ def location_delete(request, pk):
     return redirect('inventory:location_list')
 
 
-# --- Export ---------------------------------------------------------------
-
-
 def export_stock_csv(request):
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="stock.csv"'
@@ -442,6 +480,7 @@ def export_stock_csv(request):
         .select_related('item__category', 'location')
         .order_by('item__name', 'expires_at', 'id')
     )
+
     for batch in batches:
         writer.writerow([
             batch.item.name,
@@ -454,4 +493,145 @@ def export_stock_csv(request):
             batch.packaged_at.isoformat() if batch.packaged_at else '',
             batch.expires_at.isoformat() if batch.expires_at else '',
         ])
+
+    return response
+
+
+def shopping_list(request):
+    lines = services.shopping_list()
+    priced = [line.estimate for line in lines if line.estimate is not None]
+
+    context = {
+        'lines': lines,
+        'estimate': sum(priced, Decimal(0)),
+        'unpriced': len(lines) - len(priced),
+        'today': timezone.localdate(),
+    }
+
+    return render(request, 'inventory/shopping_list.html', context)
+
+
+INSIGHT_TABS = ('forecast', 'value', 'activity')
+
+
+def insights(request):
+    tab = request.GET.get('tab', '')
+
+    if tab not in INSIGHT_TABS:
+        tab = INSIGHT_TABS[0]
+
+    today = timezone.localdate()
+    context = {'tab': tab, 'tabs': INSIGHT_TABS}
+
+    if tab == 'forecast':
+        context['forecasts'] = insight_data.consumption_forecast(today)
+        context['window_days'] = insight_data.FORECAST_WINDOW_DAYS
+    elif tab == 'value':
+        context['value'] = insight_data.stock_value()
+    else:
+        context['activity'] = insight_data.daily_activity(today)
+        context['mix'] = insight_data.movement_mix(today)
+        context['users'] = insight_data.busiest_users(today)
+        context['used'] = insight_data.most_used_items(today)
+        context['recent_days'] = insight_data.RECENT_DAYS
+
+    return render(request, 'inventory/insights.html', context)
+
+
+COUNT_PAGE_SIZE = 50
+
+
+def stock_count(request):
+    source = request.POST if request.method == 'POST' else request.GET
+    location = Location.objects.filter(
+        pk=_int_or_none(source.get('location', ''))
+    ).first()
+
+    if request.method == 'POST':
+        return _apply_count(request, location)
+
+    page = None
+
+    if location:
+        batches = (
+            Batch.objects
+            .filter(location=location, quantity__gt=0)
+            .select_related('item')
+            .order_by('item__name', 'expires_at', 'id')
+        )
+        page = _page(request, batches, COUNT_PAGE_SIZE)
+
+    context = {
+        'locations': Location.objects.all(),
+        'location': location,
+        'page': page,
+        'querystring': _querystring(request),
+    }
+
+    return render(request, 'inventory/stock_count.html', context)
+
+
+def _apply_count(request, location: Location | None):
+    counts = services.parse_counts(request.POST)
+    changed = services.apply_count(
+        counts, request.POST.get('reason', ''), request.user
+    )
+    messages.success(
+        request,
+        ngettext(
+            '%(count)s batch adjusted.',
+            '%(count)s batches adjusted.',
+            changed,
+        )
+        % {'count': changed},
+    )
+    target = reverse('inventory:stock_count')
+
+    if location:
+        page = request.POST.get('page', 1)
+        target += f'?location={location.pk}&page={page}'
+
+    return redirect(target)
+
+
+def stock_import(request):
+    posted = request.method == 'POST'
+    form = ImportForm(request.POST if posted else None, request.FILES or None)
+
+    if posted and form.is_valid():
+        result = imports.import_stock(
+            form.cleaned_data['csv_file'], request.user
+        )
+        messages.success(
+            request,
+            _(
+                '%(entries)s entries imported (%(items)s new items, '
+                '%(categories)s new categories, %(locations)s new locations).'
+            )
+            % {
+                'entries': result.entries,
+                'items': result.items_created,
+                'categories': result.categories_created,
+                'locations': result.locations_created,
+            },
+        )
+
+        return redirect('inventory:item_list')
+
+    status = HTTPStatus.UNPROCESSABLE_ENTITY if posted else HTTPStatus.OK
+    context = {'form': form, 'columns': imports.COLUMNS}
+
+    return render(
+        request, 'inventory/stock_import.html', context, status=status
+    )
+
+
+def import_template(request):
+    response = HttpResponse(
+        imports.template_csv(), content_type='text/csv; charset=utf-8'
+    )
+    response['Content-Disposition'] = (
+        'attachment; filename="stock-template.csv"'
+    )
+
     return response

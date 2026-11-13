@@ -3,11 +3,14 @@ from decimal import Decimal
 from http import HTTPStatus
 
 import pytest
+from django.forms import ModelChoiceField
 from django.urls import reverse
 from django.utils import timezone
 from freezegun import freeze_time
 
+from apps.core.forms import field_of
 from apps.inventory import services
+from apps.inventory.forms import LocationTotalField
 from apps.inventory.models import (
     Batch,
     Category,
@@ -15,6 +18,7 @@ from apps.inventory.models import (
     Location,
     StockMovement,
 )
+from apps.inventory.services import EntryDetails
 from tests.inventory.factories import (
     BatchFactory,
     CategoryFactory,
@@ -38,9 +42,6 @@ def _batch(item, location, quantity='10', expires_at=None):
     )
     batch.save()
     return batch
-
-
-# --- Items ----------------------------------------------------------------
 
 
 def test_item_list_shows_status_badges(auth_client, category, location):
@@ -73,9 +74,7 @@ def test_item_list_filters_by_query_and_category(auth_client, category):
 
     assert [i.name for i in by_query.context['page']] == ['Arroz']
     assert [i.name for i in by_category.context['page']] == ['Feijao']
-    assert len(bad_category.context['page']) == len(  # noqa: PLR2004
-        ['Arroz', 'Feijao']
-    )
+    assert len(bad_category.context['page']) == len(['Arroz', 'Feijao'])
 
 
 def test_item_list_htmx_returns_partial_only(auth_client, item):
@@ -87,15 +86,15 @@ def test_item_list_htmx_returns_partial_only(auth_client, item):
 
 
 def test_item_list_paginates(auth_client, category):
-    for _ in range(21):
-        ItemFactory(category=category).save()
+    for number in range(21):
+        ItemFactory(category=category, name=f'paged {number}').save()
 
     first = auth_client.get(_url('item_list'))
-    second = auth_client.get(_url('item_list'), {'page': 2, 'q': 'item'})
+    second = auth_client.get(_url('item_list'), {'page': 2, 'q': 'paged'})
 
-    assert len(first.context['page']) == 20  # noqa: PLR2004
+    assert len(first.context['page']) == 20
     assert len(second.context['page']) == 1
-    assert 'q=item&page=1' in second.content.decode()
+    assert 'q=paged&page=1' in second.content.decode()
 
 
 def test_item_create(auth_client, category):
@@ -135,7 +134,7 @@ def test_item_create_form_loads(auth_client):
     response = auth_client.get(_url('item_create'))
 
     assert response.status_code == HTTPStatus.OK
-    assert response.context['cancel_url'] == _url('item_list')
+    assert response.context['view'].get_cancel_url() == _url('item_list')
 
 
 def test_item_update_locks_unit_when_it_has_batches(auth_client, batch):
@@ -198,9 +197,6 @@ def test_item_delete_requires_post(auth_client, item):
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
-# --- Item detail ----------------------------------------------------------
-
-
 def test_item_detail_shows_fefo_suggestion_and_flags(
     auth_client, item, location
 ):
@@ -215,7 +211,7 @@ def test_item_detail_shows_fefo_suggestion_and_flags(
     content = response.content.decode()
     assert response.status_code == HTTPStatus.OK
     assert response.context['next_batch'].quantity == Decimal(1)
-    assert response.context['total'] == Decimal(10)  # noqa: PLR2004
+    assert response.context['total'] == Decimal(10)
     assert 'Vencido' in content
     assert '10 d' in content
 
@@ -236,9 +232,6 @@ def test_item_detail_shows_notes(auth_client, category):
     response = auth_client.get(_url('item_detail', item.pk))
 
     assert 'Keep dry' in response.content.decode()
-
-
-# --- Entry / exit / adjust ------------------------------------------------
 
 
 def test_entry_creates_batch_and_redirects(auth_client, item, location):
@@ -319,7 +312,7 @@ def test_exit_insufficient_stock_is_a_conflict(auth_client, batch):
 
     batch.refresh_from_db()
     assert response.status_code == HTTPStatus.CONFLICT
-    assert batch.quantity == Decimal(10)  # noqa: PLR2004
+    assert batch.quantity == Decimal(10)
     assert 'Pedido 999' in response.content.decode()
 
 
@@ -369,18 +362,15 @@ def test_adjust_batch_invalid_keeps_form_open(auth_client, batch, location):
         _url('batch_adjust', batch.pk), {'new_quantity': '-1'}
     )
 
-    forms = {b.pk: b.adjust_form for b in response.context['batches']}
+    forms = {r.batch.pk: r.adjust_form for r in response.context['rows']}
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert forms[batch.pk].errors
     assert not forms[other.pk].is_bound
     assert 'data-open' in response.content.decode()
 
 
-# --- Movements ------------------------------------------------------------
-
-
 def test_movement_list_filters(auth_client, item, location):
-    services.add_stock(item, location, Decimal(5), reason='buy')
+    services.add_stock(item, location, Decimal(5), EntryDetails(reason='buy'))
     services.remove_stock(item, Decimal(2), reason='use')
 
     everything = auth_client.get(_url('movement_list'))
@@ -389,10 +379,10 @@ def test_movement_list_filters(auth_client, item, location):
     by_name = auth_client.get(_url('movement_list'), {'q': item.name})
     no_match = auth_client.get(_url('movement_list'), {'q': 'zzz'})
 
-    assert len(everything.context['page']) == 2  # noqa: PLR2004
+    assert len(everything.context['page']) == 2
     assert [m.kind for m in exits.context['page']] == ['exit']
-    assert len(bad_kind.context['page']) == 2  # noqa: PLR2004
-    assert len(by_name.context['page']) == 2  # noqa: PLR2004
+    assert len(bad_kind.context['page']) == 2
+    assert len(by_name.context['page']) == 2
     assert len(no_match.context['page']) == 0
     assert 'Nenhuma movimentação' in no_match.content.decode()
 
@@ -406,9 +396,6 @@ def test_movement_list_paginates(auth_client, batch):
     response = auth_client.get(_url('movement_list'), {'page': 2})
 
     assert len(response.context['page']) == 1
-
-
-# --- Categories and locations ---------------------------------------------
 
 
 @pytest.mark.parametrize(
@@ -467,9 +454,6 @@ def test_location_with_batches_cannot_be_deleted(auth_client, batch):
     assert Location.objects.exists()
 
 
-# --- Export ---------------------------------------------------------------
-
-
 def test_export_stock_csv(auth_client, item, location):
     _batch(item, location, '2.500', expires_at=date(2030, 1, 31))
     _batch(item, location, '0')
@@ -478,7 +462,7 @@ def test_export_stock_csv(auth_client, item, location):
 
     lines = response.content.decode().splitlines()
     assert response['Content-Type'].startswith('text/csv')
-    assert len(lines) == 2  # noqa: PLR2004
+    assert len(lines) == 2
     assert lines[1] == (
         f'{item.name},{item.category.name},{location.name},,2.5,un,,,2030-01-31'
     )
@@ -488,9 +472,6 @@ def test_export_stock_csv_without_expiry(auth_client, batch):
     response = auth_client.get(_url('export_stock'))
 
     assert response.content.decode().splitlines()[1].endswith(',un,,,')
-
-
-# --- Transfer -------------------------------------------------------------
 
 
 def test_transfer_moves_stock(auth_client, batch):
@@ -528,8 +509,9 @@ def test_transfer_form_excludes_current_location(auth_client, batch):
 
     response = auth_client.get(_url('item_detail', batch.item_id))
 
-    form = response.context['batches'][0].transfer_form
-    assert list(form.fields['location'].queryset) == [other]
+    form = response.context['rows'][0].transfer_form
+    location_field = field_of(form, 'location', ModelChoiceField)
+    assert list(location_field.queryset or []) == [other]
 
 
 def test_transfer_invalid_form_keeps_form_open(auth_client, batch):
@@ -537,7 +519,7 @@ def test_transfer_invalid_form_keeps_form_open(auth_client, batch):
         _url('batch_transfer', batch.pk), {'quantity': '1'}
     )
 
-    form = response.context['batches'][0].transfer_form
+    form = response.context['rows'][0].transfer_form
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert form.errors['location']
     assert 'data-open' in response.content.decode()
@@ -553,9 +535,6 @@ def test_transfer_more_than_available_is_a_conflict(auth_client, batch):
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-
-
-# --- Who did it -----------------------------------------------------------
 
 
 def test_every_stock_action_records_the_user(auth_client, user, batch):
@@ -575,7 +554,7 @@ def test_every_stock_action_records_the_user(auth_client, user, batch):
     )
 
     movements = StockMovement.objects.all()
-    assert movements.count() == 5  # noqa: PLR2004
+    assert movements.count() == 5
     assert {m.user_id for m in movements} == {user.pk}
 
 
@@ -586,8 +565,9 @@ def test_history_shows_who_did_it(auth_client, user, item, location):
     listing = auth_client.get(_url('movement_list'))
     detail = auth_client.get(_url('item_detail', item.pk))
 
-    assert listing.content.decode().count('por ana') == 1
-    assert detail.content.decode().count('por ana') == 1
+    author = f'por {user.username}'
+    assert listing.content.decode().count(author) == 1
+    assert detail.content.decode().count(author) == 1
 
 
 def test_item_form_offers_grouped_units(auth_client):
@@ -609,9 +589,6 @@ def test_unit_symbol_is_shown_in_lists(auth_client, category, location):
 
     assert '3 UI' in page.content.decode()
     assert '3 UI' in detail.content.decode()
-
-
-# --- Nutrition fields -----------------------------------------------------
 
 
 def test_item_form_saves_calories_and_water_flag(auth_client, category):
@@ -641,7 +618,7 @@ def test_item_form_saves_calories_and_water_flag(auth_client, category):
     rice = Item.objects.get(name='Rice')
     assert water.is_water
     assert water.kcal_per_unit is None
-    assert rice.kcal_per_unit == Decimal(3600)  # noqa: PLR2004
+    assert rice.kcal_per_unit == Decimal(3600)
     assert not rice.is_water
 
 
@@ -691,9 +668,6 @@ def test_medication_form_has_no_nutrition_fields(auth_client):
     fields = response.context['forms'][0][1].fields
     assert 'kcal_per_unit' not in fields
     assert 'is_water' not in fields
-
-
-# --- Packaging dates ------------------------------------------------------
 
 
 def test_entry_with_packaging_date_uses_the_shelf_life(
@@ -821,7 +795,7 @@ def test_item_form_has_a_shelf_life(auth_client, category):
     )
 
     assert response.status_code == HTTPStatus.FOUND
-    assert Item.objects.get().shelf_life_months == 240  # noqa: PLR2004
+    assert Item.objects.get().shelf_life_months == 240
 
 
 def test_shelf_life_must_be_at_least_a_month(auth_client, category):
@@ -857,9 +831,6 @@ def test_csv_includes_the_new_dates(auth_client, item, location):
     assert lines[1].endswith(',un,2023-01-01,2024-01-01,2044-01-01')
 
 
-# --- Choosing where to take from ------------------------------------------
-
-
 def test_exit_form_lists_only_locations_that_hold_the_item(
     auth_client, item, location
 ):
@@ -869,9 +840,12 @@ def test_exit_form_lists_only_locations_that_hold_the_item(
 
     response = auth_client.get(_url('item_detail', item.pk))
 
-    field = response.context['exit_form'].fields['location']
-    assert list(field.queryset) == [location]
-    assert field.label_from_instance(field.queryset[0]) == (
+    field = field_of(
+        response.context['exit_form'], 'location', LocationTotalField
+    )
+    locations = list(field.queryset or [])
+    assert locations == [location]
+    assert field.label_from_instance(locations[0]) == (
         f'{location.name} · 4 un'
     )
     page = response.content.decode()

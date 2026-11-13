@@ -1,14 +1,21 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans 'Autonomy' %} · Quartermaster{% endblock %}
+{% block title %}{% trans 'Autonomy' %} · V.A.U.L.T{% endblock %}
 {% block content %}
 <div class="mb-6">
   <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Autonomy' %}</h1>
   <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'How long your stock lasts for the household. Expired batches are not counted.' %}</p>
 </div>
 
+{% if simulated %}
+<p class="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-sky-300/70 bg-sky-50 px-4 py-2.5 text-sm text-sky-900 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-200">
+  <span>{% blocktrans with people=household.people kcal=household.kcal_per_person_day water=household.water_liters_per_person_day|floatformat:"-1" %}Simulation: {{ people }} people, {{ kcal }} kcal and {{ water }} L per person per day. Nothing was saved.{% endblocktrans %}</span>
+  <a href="{% url 'autonomy:index' %}" class="font-medium underline">{% trans 'Back to the saved household' %}</a>
+</p>
+{% endif %}
+
 <section class="grid gap-3 sm:grid-cols-3">
-  <div class="rounded-2xl border p-4 {% if result.days is not None %}border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40{% else %}border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900{% endif %}">
+  <div class="card p-4 {% if result.days is not None %}!border-emerald-300 !bg-emerald-50 dark:!border-emerald-500/30 dark:!bg-emerald-500/10{% endif %}">
     <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Overall autonomy' %}</p>
     <p class="mt-1 text-3xl font-semibold tabular-nums">{% if result.days is not None %}{{ result.days|floatformat:1 }} <span class="text-base font-normal">{% trans 'days' %}</span>{% else %}—{% endif %}</p>
     <p class="text-xs text-stone-500 dark:text-stone-400">{% trans 'The lower of food and water' %}</p>
@@ -33,9 +40,9 @@
 
 <div class="mt-6 grid gap-6 lg:grid-cols-2">
   <section class="card overflow-hidden">
-    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800"><h2 class="font-semibold">{% trans 'Food, by calories' %}</h2></header>
+    <header class="border-b border-stone-200/80 px-4 py-3 dark:border-white/10"><h2 class="font-semibold">{% trans 'Food, by calories' %}</h2></header>
     {% if result.food.lines %}
-    <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+    <ul class="divide-y divide-stone-100 text-sm dark:divide-white/5">
       {% for line in result.food.lines %}
       <li class="flex items-center justify-between gap-3 px-4 py-2.5">
         <a href="{{ line.item.get_absolute_url }}" class="truncate font-medium hover:underline">{{ line.item.name }}</a>
@@ -46,13 +53,13 @@
     {% else %}
     <p class="px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No food counted yet.' %}</p>
     {% endif %}
-    {% if result.food.expired_lines %}<p class="border-t border-stone-100 px-4 py-2 text-sm text-amber-700 dark:border-stone-800 dark:text-amber-400">{% blocktrans with count=result.food.expired_lines %}{{ count }} item(s) have expired stock that was left out.{% endblocktrans %}</p>{% endif %}
+    {% if result.food.expired_lines %}<p class="border-t border-stone-100 px-4 py-2 text-sm text-amber-700 dark:border-white/5 dark:text-amber-400">{% blocktrans with count=result.food.expired_lines %}{{ count }} item(s) have expired stock that was left out.{% endblocktrans %}</p>{% endif %}
   </section>
 
   <section class="card overflow-hidden">
-    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800"><h2 class="font-semibold">{% trans 'Drinking water' %}</h2></header>
+    <header class="border-b border-stone-200/80 px-4 py-3 dark:border-white/10"><h2 class="font-semibold">{% trans 'Drinking water' %}</h2></header>
     {% if result.water.lines %}
-    <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+    <ul class="divide-y divide-stone-100 text-sm dark:divide-white/5">
       {% for line in result.water.lines %}
       <li class="flex items-center justify-between gap-3 px-4 py-2.5">
         <a href="{{ line.item.get_absolute_url }}" class="truncate font-medium hover:underline">{{ line.item.name }}</a>
@@ -63,9 +70,20 @@
     {% else %}
     <p class="px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No water counted yet.' %}</p>
     {% endif %}
-    {% if result.water.expired_lines %}<p class="border-t border-stone-100 px-4 py-2 text-sm text-amber-700 dark:border-stone-800 dark:text-amber-400">{% blocktrans with count=result.water.expired_lines %}{{ count }} item(s) have expired stock that was left out.{% endblocktrans %}</p>{% endif %}
+    {% if result.water.expired_lines %}<p class="border-t border-stone-100 px-4 py-2 text-sm text-amber-700 dark:border-white/5 dark:text-amber-400">{% blocktrans with count=result.water.expired_lines %}{{ count }} item(s) have expired stock that was left out.{% endblocktrans %}</p>{% endif %}
   </section>
 </div>
+
+<form method="get" class="card mt-6 space-y-4 p-5">
+  <div>
+    <h2 class="font-semibold">{% trans 'What if…' %}</h2>
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Try other numbers to see how long the stock would last. Nothing is saved.' %}</p>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-3">
+    {% include 'partials/form_fields.html' with form=simulation_form %}
+  </div>
+  <div class="flex justify-end"><button type="submit" class="btn-secondary">{% trans 'Simulate' %}</button></div>
+</form>
 
 <form method="post" class="card mt-6 space-y-4 p-5">
   {% csrf_token %}

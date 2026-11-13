@@ -33,9 +33,9 @@ def test_gunicorn_defaults_fit_a_raspberry_pi(monkeypatch):
     config = _load_gunicorn_config(monkeypatch)
 
     assert config['workers'] == 1
-    assert config['threads'] == 2  # noqa: PLR2004
+    assert config['threads'] == 2
     assert config['worker_class'] == 'gthread'
-    assert config['bind'] == '0.0.0.0:8000'  # noqa: S104
+    assert config['bind'] == '0.0.0.0:8000'
     assert config['accesslog'] is None
     assert config['errorlog'] == '-'
     assert config['control_socket_disable'] is True
@@ -54,7 +54,7 @@ def test_gunicorn_can_be_tuned_with_the_environment(monkeypatch):
 
     assert config['bind'] == '127.0.0.1:9000'
     assert (config['workers'], config['threads']) == (2, 4)
-    assert config['timeout'] == 60  # noqa: PLR2004
+    assert config['timeout'] == 60
     assert config['loglevel'] == 'warning'
 
 

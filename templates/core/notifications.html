@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans 'Notifications' %} · Quartermaster{% endblock %}
+{% block title %}{% trans 'Notifications' %} · V.A.U.L.T{% endblock %}
 {% block content %}
 <div class="mb-6">
   <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Notifications' %}</h1>
@@ -8,7 +8,7 @@
 </div>
 {% if alerts %}
 <div class="card overflow-hidden">
-  <ul class="divide-y divide-stone-100 dark:divide-stone-800">
+  <ul class="divide-y divide-stone-100 dark:divide-white/5">
     {% for alert in alerts %}
     <li>
       <a href="{{ alert.url }}" class="flex items-start gap-3 px-4 py-3 hover:bg-stone-50 dark:hover:bg-stone-800/50">

@@ -1,3 +1,6 @@
+from datetime import date
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
@@ -9,6 +12,9 @@ from apps.core.models import TimestampedModel
 
 class Category(models.Model):
     name = models.CharField(_('name'), max_length=80, unique=True)
+
+    item_count: int
+    batch_count: int
 
     class Meta:
         ordering = ['name']
@@ -25,7 +31,9 @@ class Location(TimestampedModel):
         _('description'), max_length=200, blank=True
     )
 
-    class Meta:
+    total: Decimal
+
+    class Meta(TimestampedModel.Meta):
         ordering = ['name']
         verbose_name = _('location')
         verbose_name_plural = _('locations')
@@ -202,7 +210,11 @@ class Item(TimestampedModel):
     )
     notes = models.TextField(_('notes'), blank=True)
 
-    class Meta:
+    total: Decimal
+    next_expiry: date | None
+    last_cost: Decimal | None
+
+    class Meta(TimestampedModel.Meta):
         ordering = ['name']
         verbose_name = _('item')
         verbose_name_plural = _('items')
@@ -258,8 +270,18 @@ class Batch(TimestampedModel):
     produced_at = models.DateField(_('manufactured at'), null=True, blank=True)
     packaged_at = models.DateField(_('packaged at'), null=True, blank=True)
     lot_code = models.CharField(_('lot code'), max_length=60, blank=True)
+    unit_cost = models.DecimalField(
+        _('unit cost'),
+        max_digits=12,
+        decimal_places=4,
+        null=True,
+        blank=True,
+    )
 
-    class Meta:
+    item_id: int
+    location_id: int
+
+    class Meta(TimestampedModel.Meta):
         ordering = ['expires_at', 'packaged_at', 'id']
         verbose_name = _('batch')
         verbose_name_plural = _('batches')
@@ -267,6 +289,13 @@ class Batch(TimestampedModel):
             models.CheckConstraint(
                 condition=models.Q(quantity__gte=0),
                 name='batch_quantity_gte_0',
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(unit_cost__isnull=True)
+                    | models.Q(unit_cost__gte=0)
+                ),
+                name='batch_unit_cost_gte_0',
             ),
             models.CheckConstraint(
                 condition=(
@@ -326,6 +355,9 @@ class StockMovement(models.Model):
         verbose_name=_('user'),
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    batch_id: int
+    user_id: int | None
 
     class Meta:
         ordering = ['-created_at', '-id']

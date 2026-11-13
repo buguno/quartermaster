@@ -2,7 +2,7 @@
 <section class="card mb-6 p-4">
   <div class="flex items-start justify-between gap-3">
     <h2 class="font-semibold">{% trans 'Medication' %}</h2>
-    <a href="{% url 'medications:edit' item.pk %}" class="btn-secondary">{% trans 'Edit' %}</a>
+    <a href="{% url 'medications:edit' item.pk %}" data-write class="btn-secondary">{% trans 'Edit' %}</a>
   </div>
   <dl class="mt-3 grid gap-3 text-sm sm:grid-cols-3">
     <div><dt class="text-stone-500 dark:text-stone-400">{% trans 'Active ingredient' %}</dt><dd class="font-medium">{{ medication.active_ingredient }}</dd></div>

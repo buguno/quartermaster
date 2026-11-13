@@ -43,16 +43,13 @@ def _water(category, location, unit, quantity, name='Water'):
     return item
 
 
-# --- Household ------------------------------------------------------------
-
-
 def test_household_is_a_single_row_with_defaults(db):
     first = services.get_household()
     second = services.get_household()
 
     assert first.pk == second.pk
     assert Household.objects.count() == 1
-    assert (first.people, first.kcal_per_person_day) == (1, 2000)  # noqa: PLR2004
+    assert (first.people, first.kcal_per_person_day) == (1, 2000)
     assert first.water_liters_per_person_day == Decimal(3)
     assert str(first) == '1'
 
@@ -78,9 +75,6 @@ def test_household_form_validates(db):
     }).is_valid()
 
 
-# --- Calculation ----------------------------------------------------------
-
-
 @freeze_time(TODAY)
 def test_food_and_water_days(category, location):
     _food(category, location, kg='2', expired_kg='1')
@@ -89,9 +83,9 @@ def test_food_and_water_days(category, location):
 
     result = services.calculate()
 
-    assert result.food.total == Decimal(7200)  # noqa: PLR2004
+    assert result.food.total == Decimal(7200)
     assert result.food.days == Decimal('3.6')
-    assert result.water.total == Decimal(9)  # noqa: PLR2004
+    assert result.water.total == Decimal(9)
     assert result.water.days == Decimal(3)
     assert result.days == Decimal(3)
     assert result.food.expired_lines == 1
@@ -159,9 +153,6 @@ def test_biggest_contributors_come_first(category, location):
     assert [line.item for line in lines] == [big, small]
 
 
-# --- View -----------------------------------------------------------------
-
-
 @freeze_time(TODAY)
 def test_page_shows_the_numbers(auth_client, category, location):
     _food(category, location)
@@ -201,7 +192,7 @@ def test_page_mentions_left_out_expired_stock(auth_client, category, location):
 
     content = auth_client.get(reverse('autonomy:index')).content.decode()
 
-    assert content.count('com estoque vencido que ficou de fora') == 2  # noqa: PLR2004
+    assert content.count('com estoque vencido que ficou de fora') == 2
 
 
 def test_saving_the_household(auth_client):
@@ -217,7 +208,7 @@ def test_saving_the_household(auth_client):
     household = Household.objects.get()
     assert response.status_code == HTTPStatus.FOUND
     assert response.url == reverse('autonomy:index')
-    assert (household.people, household.kcal_per_person_day) == (4, 2200)  # noqa: PLR2004
+    assert (household.people, household.kcal_per_person_day) == (4, 2200)
     assert household.water_liters_per_person_day == Decimal('3.5')
 
 
@@ -243,3 +234,90 @@ def test_admin(auth_client, user, db):
     response = auth_client.get(reverse('admin:autonomy_household_changelist'))
 
     assert response.status_code == HTTPStatus.OK
+
+
+@freeze_time(TODAY)
+def test_dashboard_shows_the_autonomy_rings(auth_client, category, location):
+    _food(category, location, kcal='1000', kg='60')  # 60,000 kcal: 30 days
+    _water(category, location, 'l', '3')  # 1 day of water
+
+    response = auth_client.get(reverse('inventory:dashboard'))
+
+    content = response.content.decode()
+    assert 'Autonomia' in content
+    assert 'class="ring size-full"' in content
+    assert '--ring-color: #ef4444' in content  # water: under a week
+    assert '--ring-color: #10b981' in content  # food: a full ring
+
+
+def test_dashboard_has_no_autonomy_without_food_or_water(auth_client):
+    content = auth_client.get(reverse('inventory:dashboard')).content.decode()
+
+    assert 'class="ring size-full"' not in content
+
+
+@freeze_time(TODAY)
+def test_widget_colors_follow_the_days_left(auth_client, category, location):
+    _food(category, location, kcal='1000', kg='20')  # 10 days: amber
+
+    content = auth_client.get(reverse('inventory:dashboard')).content.decode()
+
+    assert '--ring-color: #f59e0b' in content
+
+
+@freeze_time(TODAY)
+def test_widget_ring_for_the_missing_half(auth_client, category, location):
+    _food(category, location)  # food only: water has no days
+
+    content = auth_client.get(reverse('inventory:dashboard')).content.decode()
+
+    assert content.count('class="ring size-full"') == 3
+    assert '--pct: 0' in content
+
+
+@freeze_time(TODAY)
+def test_simulation_recomputes_without_saving(auth_client, category, location):
+    _food(category, location, kcal='2000', kg='4')  # 8,000 kcal
+
+    page = auth_client.get(
+        reverse('autonomy:index'),
+        {
+            'sim-people': '4',
+            'sim-kcal_per_person_day': '2000',
+            'sim-water_liters_per_person_day': '3',
+        },
+    )
+
+    assert page.context['simulated'] is True
+    assert page.context['result'].food.days == Decimal(1)
+    assert 'Simulação' in page.content.decode()
+    household = Household.objects.get()
+    assert household.people == 1
+
+
+@freeze_time(TODAY)
+def test_without_the_what_if_form_the_saved_household_is_used(
+    auth_client, category, location
+):
+    _food(category, location, kcal='2000', kg='4')
+
+    page = auth_client.get(reverse('autonomy:index'))
+
+    assert page.context['simulated'] is False
+    assert page.context['result'].food.days == Decimal(4)
+    assert 'Simulação' not in page.content.decode()
+
+
+def test_an_invalid_simulation_falls_back_to_the_saved_household(auth_client):
+    page = auth_client.get(
+        reverse('autonomy:index'),
+        {
+            'sim-people': '0',
+            'sim-kcal_per_person_day': '2000',
+            'sim-water_liters_per_person_day': '3',
+        },
+    )
+
+    assert page.status_code == HTTPStatus.OK
+    assert page.context['simulated'] is False
+    assert page.context['simulation_form'].errors

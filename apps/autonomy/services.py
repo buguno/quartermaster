@@ -79,10 +79,15 @@ def _supply(items, amount_of, per_day: Decimal) -> Supply:
     return Supply(total, days, lines, expired_lines)
 
 
-def calculate(*, today: date | None = None) -> Autonomy:
-    """Days of food and water for the household, ignoring expired stock."""
+def calculate(
+    *, today: date | None = None, household: Household | None = None
+) -> Autonomy:
+    """Days of food and water for the household, ignoring expired stock.
+
+    Pass an unsaved `household` to simulate other people or needs.
+    """
     today = today or timezone.localdate()
-    household = get_household()
+    household = household or get_household()
     annotations = _stock_annotations(today)
 
     food_items = list(

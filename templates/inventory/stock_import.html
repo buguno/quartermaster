@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Import CSV' %} · V.A.U.L.T{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Import CSV' %}</h1>
+  <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Load many entries at once, for example your first inventory. Each row is one entry of stock.' %}</p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-2">
+  <form method="post" enctype="multipart/form-data" class="card space-y-4 self-start p-5">
+    {% csrf_token %}
+    {% for error in form.non_field_errors %}<p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{{ error }}</p>{% endfor %}
+    {% include 'partials/form_fields.html' %}
+    <div class="flex justify-end gap-2">
+      <a href="{% url 'inventory:import_template' %}" class="btn-secondary">{% trans 'Download template' %}</a>
+      <button type="submit" class="btn-primary">{% trans 'Import' %}</button>
+    </div>
+  </form>
+
+  <section class="card space-y-3 p-5 text-sm">
+    <h2 class="font-semibold">{% trans 'File format' %}</h2>
+    <p class="text-stone-600 dark:text-stone-300">{% trans 'The first line holds the column names. Commas or semicolons both work. Dates look like 2027-06-30 or 30/06/2027.' %}</p>
+    <ul class="space-y-1 text-stone-600 dark:text-stone-300">
+      <li><code class="font-semibold">item</code>, <code class="font-semibold">category</code>, <code class="font-semibold">location</code>, <code class="font-semibold">quantity</code> — {% trans 'required. Missing items, categories and locations are created.' %}</li>
+      <li><code class="font-semibold">unit</code> — {% trans 'the unit code, such as un, kg, l, ml, box or tablet. Empty means unit.' %}</li>
+      <li><code class="font-semibold">expires_at</code>, <code class="font-semibold">packaged_at</code>, <code class="font-semibold">produced_at</code>, <code class="font-semibold">lot_code</code>, <code class="font-semibold">unit_cost</code> — {% trans 'optional.' %}</li>
+    </ul>
+    <p class="rounded-lg bg-amber-50 px-3 py-2 text-amber-800 dark:bg-amber-950 dark:text-amber-300">{% trans 'Everything is checked first. If any row has a problem, nothing is imported.' %}</p>
+  </section>
+</div>
+{% endblock %}

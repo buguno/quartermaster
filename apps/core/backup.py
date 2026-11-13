@@ -25,7 +25,7 @@ from django.utils.translation import gettext as _
 
 from apps.core.exceptions import BackupError
 
-FORMAT = 'quartermaster-backup'
+FORMAT = 'vault-backup'
 VERSION = 1
 EXCLUDED = [
     'contenttypes',
@@ -38,10 +38,7 @@ GPG_TIMEOUT = 120
 
 def filename(now: datetime | None = None) -> str:
     now = now or timezone.localtime()
-    return f'quartermaster-{now:%Y%m%d-%H%M%S}.backup.gpg'
-
-
-# --- GnuPG ----------------------------------------------------------------
+    return f'vault-{now:%Y%m%d-%H%M%S}.backup.gpg'
 
 
 def _gpg(arguments: list[str], data: bytes, passphrase: str) -> bytes:
@@ -55,7 +52,7 @@ def _gpg(arguments: list[str], data: bytes, passphrase: str) -> bytes:
         os.write(write_end, passphrase.encode())
         os.close(write_end)
         with tempfile.TemporaryDirectory() as home:
-            os.chmod(home, 0o700)  # noqa: S103
+            os.chmod(home, 0o700)
             command = [
                 gpg,
                 '--batch',
@@ -71,7 +68,7 @@ def _gpg(arguments: list[str], data: bytes, passphrase: str) -> bytes:
                 *arguments,
             ]
             try:
-                result = subprocess.run(  # noqa: S603
+                result = subprocess.run(
                     command,
                     input=data,
                     capture_output=True,
@@ -80,7 +77,7 @@ def _gpg(arguments: list[str], data: bytes, passphrase: str) -> bytes:
                     check=False,
                 )
             finally:
-                subprocess.run(  # noqa: S603
+                subprocess.run(
                     [shutil.which('gpgconf') or 'gpgconf', '--homedir', home]
                     + ['--kill', 'gpg-agent'],
                     capture_output=True,
@@ -106,9 +103,6 @@ def encrypt(data: bytes, passphrase: str) -> bytes:
 
 def decrypt(data: bytes, passphrase: str) -> bytes:
     return _gpg(['--decrypt'], data, passphrase)
-
-
-# --- Data -----------------------------------------------------------------
 
 
 def _schema_state() -> dict[str, str]:
@@ -145,9 +139,7 @@ def _read_document(encrypted: bytes, passphrase: str) -> dict:
     try:
         document = json.loads(decrypt(encrypted, passphrase))
     except (ValueError, UnicodeDecodeError) as error:
-        raise BackupError(
-            _('The file is not a Quartermaster backup.')
-        ) from error
+        raise BackupError(_('The file is not a V.A.U.L.T backup.')) from error
 
     valid = (
         isinstance(document, dict)
@@ -156,7 +148,7 @@ def _read_document(encrypted: bytes, passphrase: str) -> dict:
         and isinstance(document.get('data'), list)
     )
     if not valid:
-        raise BackupError(_('The file is not a Quartermaster backup.'))
+        raise BackupError(_('The file is not a V.A.U.L.T backup.'))
     if document.get('schema') != _schema_state():
         raise BackupError(
             _('This backup was made by a different version of the system.')

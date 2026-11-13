@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans 'Settings' %} · Quartermaster{% endblock %}
+{% block title %}{% trans 'Settings' %} · V.A.U.L.T{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-2xl space-y-6">
   <div>
@@ -8,7 +8,7 @@
     <p class="text-sm text-stone-500 dark:text-stone-400">{{ user.get_username }}</p>
   </div>
 
-  <form method="post" action="{% url 'core:settings' %}" class="card space-y-5 p-5">
+  <form method="post" action="{% url 'core:settings' %}" data-allow class="card space-y-5 p-5">
     {% csrf_token %}
     <h2 class="font-semibold">{% trans 'Appearance and language' %}</h2>
     {% for error in preferences_form.non_field_errors %}
@@ -21,7 +21,7 @@
     </div>
   </form>
 
-  <form method="post" action="{% url 'core:change_password' %}" class="card space-y-4 p-5">
+  <form method="post" action="{% url 'core:change_password' %}" data-allow class="card space-y-4 p-5">
     {% csrf_token %}
     <h2 class="font-semibold">{% trans 'Change password' %}</h2>
     {% include 'partials/form_fields.html' with form=password_form %}
@@ -44,7 +44,7 @@
       <button type="submit" class="btn-primary">{% trans 'Download encrypted backup' %}</button>
     </form>
 
-    <form method="post" action="{% url 'core:backup_restore' %}" enctype="multipart/form-data" class="space-y-4 border-t border-stone-200 pt-5 dark:border-stone-800">
+    <form method="post" action="{% url 'core:backup_restore' %}" enctype="multipart/form-data" class="space-y-4 border-t border-stone-200 pt-5 dark:border-white/10">
       {% csrf_token %}
       <h3 class="text-sm font-semibold">{% trans 'Restore' %}</h3>
       <p class="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">{% trans 'Restoring replaces every item, batch, kit and user with the ones in the file, and signs everyone out. Export a backup first.' %}</p>

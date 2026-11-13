@@ -3,7 +3,8 @@ from decimal import Decimal
 from http import HTTPStatus
 
 import pytest
-from django.test import RequestFactory
+from django.contrib.auth.models import AnonymousUser
+from django.http import HttpRequest
 from django.urls import reverse
 from django.utils import timezone
 
@@ -25,9 +26,6 @@ def only_these_sources(monkeypatch):
     return install
 
 
-# --- Registry -------------------------------------------------------------
-
-
 def test_count_and_collect_sum_every_source(only_these_sources):
     only_these_sources(
         AlertSource(count=lambda: 1, alerts=lambda: [_alert(WARNING, 'a')]),
@@ -37,7 +35,7 @@ def test_count_and_collect_sum_every_source(only_these_sources):
         ),
     )
 
-    assert alerts.alert_count() == 3  # noqa: PLR2004
+    assert alerts.alert_count() == 3
     assert [a.title for a in alerts.collect_alerts()] == ['c', 'a', 'b']
 
 
@@ -48,29 +46,23 @@ def test_no_sources_no_alerts(only_these_sources):
     assert alerts.collect_alerts() == []
 
 
-# --- Context processor ----------------------------------------------------
-
-
 def test_anonymous_users_get_no_count(client, db):
-    request = RequestFactory().get('/')
-    request.user = type('Anonymous', (), {'is_authenticated': False})()
+    request = HttpRequest()
+    request.user = AnonymousUser()
 
     assert notifications(request) == {}
 
 
 def test_requests_without_a_user_get_no_count():
-    assert notifications(RequestFactory().get('/')) == {}
+    assert notifications(HttpRequest()) == {}
 
 
 def test_signed_in_users_get_a_lazy_count(user, only_these_sources):
     only_these_sources(AlertSource(count=lambda: 4, alerts=list))
-    request = RequestFactory().get('/')
+    request = HttpRequest()
     request.user = user
 
     assert str(notifications(request)['alert_count']) == '4'
-
-
-# --- Inventory source -----------------------------------------------------
 
 
 def _batch(item, location, quantity, expires_at=None):
@@ -98,7 +90,7 @@ def test_inventory_alerts(auth_client, category, location):
 
     found = {a.title: a for a in alerts.collect_alerts()}
 
-    assert alerts.alert_count() == 4  # noqa: PLR2004
+    assert alerts.alert_count() == 4
     assert found['Old milk'].level == DANGER
     assert 'Venceu em' in found['Old milk'].detail
     assert found['Rice'].level == WARNING
@@ -108,9 +100,6 @@ def test_inventory_alerts(auth_client, category, location):
     assert '2 de 5' in found['Sugar'].detail
     assert found['Rice'].url == soon.get_absolute_url()
     assert found['Salt'].url == empty.get_absolute_url()
-
-
-# --- Page and menu --------------------------------------------------------
 
 
 def test_page_lists_the_alerts(auth_client, category, location):

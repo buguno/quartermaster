@@ -19,6 +19,8 @@ class Kit(models.Model):
         verbose_name=_('location'),
     )
 
+    location_id: int
+
     class Meta:
         ordering = ['name']
         verbose_name = _('kit')
@@ -47,6 +49,9 @@ class KitItem(models.Model):
     required_quantity = models.DecimalField(
         _('required quantity'), max_digits=12, decimal_places=3
     )
+
+    kit_id: int
+    item_id: int
 
     class Meta:
         ordering = ['item__name']

@@ -1,14 +1,28 @@
 import pytest
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+from django.utils import translation
 from testcontainers.postgres import PostgresContainer
 
+from tests.fakes import PASSWORD, fake
 from tests.inventory.factories import (
     BatchFactory,
     CategoryFactory,
     ItemFactory,
     LocationFactory,
 )
+
+
+@pytest.fixture(autouse=True)
+def _first_user_setup_off(settings):
+    """Most tests have no users; only the setup tests want the redirect."""
+    settings.FIRST_USER_SETUP_ENABLED = False
+
+
+@pytest.fixture(autouse=True)
+def _default_language(settings):
+    """Requests switch the active language and never switch it back."""
+    translation.activate(settings.LANGUAGE_CODE)
 
 
 @pytest.fixture(scope='session')
@@ -60,8 +74,8 @@ def batch(item, location):
 
 @pytest.fixture
 def user(db):
-    return get_user_model().objects.create_user(
-        username='ana', password='s3cret-pass'
+    return User.objects.create_user(
+        username=fake.user_name(), password=PASSWORD
     )
 
 

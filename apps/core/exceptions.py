@@ -4,3 +4,11 @@ class DomainError(Exception):
 
 class BackupError(DomainError):
     pass
+
+
+class SetupClosed(DomainError):
+    pass
+
+
+class ReadOnlyAccount(DomainError):
+    pass

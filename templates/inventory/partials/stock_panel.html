@@ -1,9 +1,9 @@
-{% load i18n ages %}
+{% load i18n ages money %}
 <div id="stock-panel" class="space-y-6">
   <div id="flash">{% include 'partials/messages.html' %}</div>
 
   <section class="grid gap-3 sm:grid-cols-3">
-    <div class="rounded-2xl border p-4 {% if low %}border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40{% else %}border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900{% endif %}">
+    <div class="card p-4 {% if low %}!border-red-300 !bg-red-50 dark:!border-red-500/30 dark:!bg-red-500/10{% endif %}">
       <p class="text-sm {% if low %}text-red-800 dark:text-red-300{% else %}text-stone-500 dark:text-stone-400{% endif %}">{% trans 'Total stock' %}</p>
       <p class="mt-1 text-3xl font-semibold tabular-nums {% if low %}text-red-900 dark:text-red-200{% endif %}">{{ total|floatformat:"-3" }} <span class="text-base font-normal">{{ item.unit_symbol }}</span></p>
     </div>
@@ -42,23 +42,25 @@
   </section>
 
   <section class="card overflow-hidden">
-    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800"><h2 class="font-semibold">{% trans 'Batches' %}</h2></header>
-    {% if batches %}
+    <header class="border-b border-stone-200 px-4 py-3 dark:border-white/10"><h2 class="font-semibold">{% trans 'Batches' %}</h2></header>
+    {% if rows %}
     <table class="w-full text-sm">
       <thead class="text-left text-stone-500 dark:text-stone-400">
         <tr>
           <th class="px-4 py-2 font-medium">{% trans 'Location' %}</th>
           <th class="hidden px-4 py-2 font-medium sm:table-cell">{% trans 'Lot code' %}</th>
           <th class="hidden px-4 py-2 font-medium md:table-cell">{% trans 'Packaged / made' %}</th>
+          <th class="hidden px-4 py-2 text-right font-medium lg:table-cell">{% trans 'Unit cost' %}</th>
           <th class="px-4 py-2 font-medium">{% trans 'Expires at' %}</th>
           <th class="px-4 py-2 text-right font-medium">{% trans 'Quantity' %}</th>
           <th class="px-4 py-2"></th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
-        {% for batch in batches %}
+      <tbody class="divide-y divide-stone-100 dark:divide-white/5">
+        {% for row in rows %}
+        {% with batch=row.batch %}
         <tr class="align-top">
-          <td class="px-4 py-3">{{ batch.location.name }}</td>
+          <td class="px-4 py-3">{{ batch.location.name }}{% if row.reserved %} <span class="badge badge-gray ml-1" title="{% trans 'Automatic exits skip kits. Choose this location to take from it.' %}">{% trans 'In a kit' %}</span>{% endif %}</td>
           <td class="hidden px-4 py-3 text-stone-500 sm:table-cell dark:text-stone-400">{{ batch.lot_code|default:"—" }}</td>
           <td class="hidden px-4 py-3 md:table-cell">
             {% if batch.packaged_at %}
@@ -71,21 +73,22 @@
             {% endif %}
             {% if not batch.packaged_at and not batch.produced_at %}<span class="text-stone-400">—</span>{% endif %}
           </td>
+          <td class="hidden px-4 py-3 text-right tabular-nums text-stone-500 lg:table-cell dark:text-stone-400">{{ batch.unit_cost|money }}</td>
           <td class="px-4 py-3">
             {% if batch.expires_at %}
             {{ batch.expires_at|date:'SHORT_DATE_FORMAT' }}
-            {% if batch.days_left < 0 %}<span class="badge badge-red ml-1">{% trans 'Expired' %}</span>
-            {% elif batch.expiring %}<span class="badge badge-amber ml-1">{{ batch.days_left }} d</span>{% endif %}
+            {% if row.days_left < 0 %}<span class="badge badge-red ml-1">{% trans 'Expired' %}</span>
+            {% elif row.expiring %}<span class="badge badge-amber ml-1">{{ row.days_left }} d</span>{% endif %}
             {% else %}<span class="text-stone-400">—</span>{% endif %}
           </td>
           <td class="px-4 py-3 text-right tabular-nums">{{ batch.quantity|floatformat:"-3" }} {{ item.unit_symbol }}</td>
           <td class="px-4 py-3">
             <div class="flex flex-wrap justify-end gap-2">
-              <button type="button" class="btn-secondary" data-modal-open="transfer-{{ batch.pk }}">{% trans 'Transfer' %}</button>
-              <button type="button" class="btn-secondary" data-modal-open="adjust-{{ batch.pk }}">{% trans 'Adjust' %}</button>
+              <button type="button" data-write class="btn-secondary" data-modal-open="transfer-{{ batch.pk }}">{% trans 'Transfer' %}</button>
+              <button type="button" data-write class="btn-secondary" data-modal-open="adjust-{{ batch.pk }}">{% trans 'Adjust' %}</button>
             </div>
 
-            <dialog id="transfer-{{ batch.pk }}" class="modal"{% if batch.transfer_form.errors %} data-open{% endif %}>
+            <dialog id="transfer-{{ batch.pk }}" class="modal"{% if row.transfer_form.errors %} data-open{% endif %}>
               <form method="post" action="{% url 'inventory:batch_transfer' batch.pk %}" class="space-y-4 p-5 text-left"
                     hx-post="{% url 'inventory:batch_transfer' batch.pk %}" hx-target="#stock-panel" hx-swap="outerHTML">
                 {% csrf_token %}
@@ -93,7 +96,7 @@
                   <h3 class="text-lg font-semibold">{% trans 'Transfer stock' %}</h3>
                   <p class="text-sm text-stone-500 dark:text-stone-400">{{ item.name }} · {{ batch.location.name }} · {{ batch.quantity|floatformat:"-3" }} {{ item.unit_symbol }}</p>
                 </div>
-                {% include 'partials/form_fields.html' with form=batch.transfer_form %}
+                {% include 'partials/form_fields.html' with form=row.transfer_form %}
                 <div class="flex justify-end gap-2 pt-1">
                   <button type="button" class="btn-secondary" data-modal-close>{% trans 'Cancel' %}</button>
                   <button type="submit" class="btn-primary">{% trans 'Transfer' %}</button>
@@ -101,7 +104,7 @@
               </form>
             </dialog>
 
-            <dialog id="adjust-{{ batch.pk }}" class="modal"{% if batch.adjust_form.errors %} data-open{% endif %}>
+            <dialog id="adjust-{{ batch.pk }}" class="modal"{% if row.adjust_form.errors %} data-open{% endif %}>
               <form method="post" action="{% url 'inventory:batch_adjust' batch.pk %}" class="space-y-4 p-5 text-left"
                     hx-post="{% url 'inventory:batch_adjust' batch.pk %}" hx-target="#stock-panel" hx-swap="outerHTML">
                 {% csrf_token %}
@@ -109,7 +112,7 @@
                   <h3 class="text-lg font-semibold">{% trans 'Adjust batch' %}</h3>
                   <p class="text-sm text-stone-500 dark:text-stone-400">{{ item.name }} · {{ batch.location.name }} · {{ batch.quantity|floatformat:"-3" }} {{ item.unit_symbol }}</p>
                 </div>
-                {% include 'partials/form_fields.html' with form=batch.adjust_form %}
+                {% include 'partials/form_fields.html' with form=row.adjust_form %}
                 <div class="flex justify-end gap-2 pt-1">
                   <button type="button" class="btn-secondary" data-modal-close>{% trans 'Cancel' %}</button>
                   <button type="submit" class="btn-primary">{% trans 'Save' %}</button>
@@ -118,6 +121,7 @@
             </dialog>
           </td>
         </tr>
+        {% endwith %}
         {% endfor %}
       </tbody>
     </table>
@@ -127,9 +131,9 @@
   </section>
 
   <section class="card overflow-hidden">
-    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800"><h2 class="font-semibold">{% trans 'Recent movements' %}</h2></header>
+    <header class="border-b border-stone-200 px-4 py-3 dark:border-white/10"><h2 class="font-semibold">{% trans 'Recent movements' %}</h2></header>
     {% if movements %}
-    <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+    <ul class="divide-y divide-stone-100 text-sm dark:divide-white/5">
       {% for movement in movements %}
       {% include 'inventory/partials/movement_row.html' with show_item=False %}
       {% endfor %}

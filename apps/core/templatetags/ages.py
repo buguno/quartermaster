@@ -16,6 +16,12 @@ def _years_and_months(start: date, today: date) -> tuple[int, int]:
 
 
 @register.filter
+def days_until(day: date) -> int:
+    """Whole days from today to `day` (negative when it has passed)."""
+    return (day - timezone.localdate()).days
+
+
+@register.filter
 def age(start: date | None) -> str:
     """How long ago `start` was, e.g. "3 years and 2 months"."""
     if not start:

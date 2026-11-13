@@ -1,39 +1,52 @@
 {% extends 'base.html' %}
-{% load i18n %}
-{% block title %}{% trans 'Dashboard' %} · Quartermaster{% endblock %}
+{% load ages i18n %}
+{% block title %}{% trans 'Dashboard' %} · V.A.U.L.T{% endblock %}
 {% block content %}
-<div class="mb-6">
-  <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Dashboard' %}</h1>
-  <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'l, F j, Y' as long_date %}{{ today|date:long_date }}</p>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-3xl font-semibold tracking-tight">{{ greeting }}</h1>
+    <p class="mt-1 text-stone-500 dark:text-stone-400">
+      {% if expiring_count or low_stock_count %}
+      {% blocktrans count n=expiring_count %}{{ n }} batch expires within {{ warning_days }} days{% plural %}{{ n }} batches expire within {{ warning_days }} days{% endblocktrans %},
+      {% blocktrans count n=low_stock_count %}{{ n }} item is below its minimum.{% plural %}{{ n }} items are below their minimum.{% endblocktrans %}
+      {% else %}{% trans 'Everything is in order.' %}{% endif %}
+      <span class="text-stone-400 dark:text-stone-500">· {% trans 'l, F j, Y' as long_date %}{{ today|date:long_date }}</span>
+    </p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'inventory:shopping_list' %}" class="btn-secondary">{% trans 'Shopping list' %}</a>
+    <a href="{% url 'inventory:insights' %}" class="btn-primary">{% trans 'Insights' %}</a>
+  </div>
 </div>
 
 <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-  <div class="rounded-2xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-    <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Items' %}</p>
-    <p class="mt-1 text-3xl font-semibold tabular-nums">{{ item_count }}</p>
+  <div class="card p-4">
+    <p class="stat-label">{% trans 'Items' %}</p>
+    <p class="stat-value">{{ item_count }}</p>
   </div>
-  <div class="rounded-2xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-    <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Batches in stock' %}</p>
-    <p class="mt-1 text-3xl font-semibold tabular-nums">{{ batch_count }}</p>
+  <div class="card p-4">
+    <p class="stat-label">{% trans 'Batches in stock' %}</p>
+    <p class="stat-value">{{ batch_count }}</p>
   </div>
-  <div class="rounded-2xl border p-4 {% if expiring_count %}border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40{% else %}border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900{% endif %}">
-    <p class="text-sm {% if expiring_count %}text-amber-800 dark:text-amber-300{% else %}text-stone-500 dark:text-stone-400{% endif %}">{% trans 'Expiring soon' %}</p>
-    <p class="mt-1 text-3xl font-semibold tabular-nums {% if expiring_count %}text-amber-900 dark:text-amber-200{% endif %}">{{ expiring_count }}</p>
-  </div>
-  <div class="rounded-2xl border p-4 {% if low_stock_count %}border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40{% else %}border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900{% endif %}">
-    <p class="text-sm {% if low_stock_count %}text-red-800 dark:text-red-300{% else %}text-stone-500 dark:text-stone-400{% endif %}">{% trans 'Below minimum' %}</p>
-    <p class="mt-1 text-3xl font-semibold tabular-nums {% if low_stock_count %}text-red-900 dark:text-red-200{% endif %}">{{ low_stock_count }}</p>
-  </div>
+  <a href="{% url 'core:notifications' %}" class="card block p-4 {% if expiring_count %}!border-amber-300 !bg-amber-50 dark:!border-amber-500/30 dark:!bg-amber-500/10{% endif %}">
+    <p class="stat-label {% if expiring_count %}!text-amber-800 dark:!text-amber-300{% endif %}">{% trans 'Expiring soon' %}</p>
+    <p class="stat-value {% if expiring_count %}text-amber-900 dark:text-amber-200{% endif %}">{{ expiring_count }}</p>
+  </a>
+  <a href="{% url 'inventory:shopping_list' %}" class="card block p-4 {% if low_stock_count %}!border-red-300 !bg-red-50 dark:!border-red-500/30 dark:!bg-red-500/10{% endif %}">
+    <p class="stat-label {% if low_stock_count %}!text-red-800 dark:!text-red-300{% endif %}">{% trans 'Below minimum' %}</p>
+    <p class="stat-value {% if low_stock_count %}text-red-900 dark:text-red-200{% endif %}">{{ low_stock_count }}</p>
+  </a>
 </section>
 
 <div class="mt-6 grid gap-6 lg:grid-cols-2">
-  <section class="rounded-2xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800">
+  <section class="card overflow-hidden">
+    <header class="border-b border-stone-200/80 px-4 py-3 dark:border-white/10">
       <h2 class="font-semibold">{% blocktrans %}Expiring within {{ warning_days }} days{% endblocktrans %}</h2>
     </header>
     {% if expiring %}
-    <ul class="divide-y divide-stone-100 dark:divide-stone-800">
+    <ul class="divide-y divide-stone-100 dark:divide-white/5">
       {% for batch in expiring %}
+      {% with days=batch.expires_at|days_until %}
       <li class="flex items-center justify-between gap-3 px-4 py-3">
         <div class="min-w-0">
           <a href="{{ batch.item.get_absolute_url }}" class="block truncate font-medium hover:underline">{{ batch.item.name }}</a>
@@ -41,42 +54,45 @@
             {{ batch.quantity|floatformat:"-3" }} {{ batch.item.unit_symbol }} · {{ batch.location.name }} · {{ batch.expires_at|date:'SHORT_DATE_FORMAT' }}
           </p>
         </div>
-        {% if batch.days_left < 0 %}
-        <span class="shrink-0 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-950 dark:text-red-300">{% trans 'Expired' %}</span>
+        {% if days < 0 %}
+        <span class="badge badge-red">{% trans 'Expired' %}</span>
         {% else %}
-        <span class="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">{{ batch.days_left }} d</span>
+        <span class="badge badge-amber">{{ days }} d</span>
         {% endif %}
       </li>
+      {% endwith %}
       {% endfor %}
     </ul>
     {% if expiring_count > expiring|length %}
-    <p class="border-t border-stone-100 px-4 py-2 text-sm text-stone-500 dark:border-stone-800 dark:text-stone-400">{% blocktrans with shown=expiring|length %}Showing {{ shown }} of {{ expiring_count }}.{% endblocktrans %}</p>
+    <p class="border-t border-stone-100 px-4 py-2 text-sm text-stone-500 dark:border-white/5 dark:text-stone-400">{% blocktrans with shown=expiring|length %}Showing {{ shown }} of {{ expiring_count }}.{% endblocktrans %}</p>
     {% endif %}
     {% else %}
     <p class="px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'Nothing expiring soon.' %}</p>
     {% endif %}
   </section>
 
-  <section class="rounded-2xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-    <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800">
+  <section class="card overflow-hidden">
+    <header class="flex items-center justify-between gap-3 border-b border-stone-200/80 px-4 py-3 dark:border-white/10">
       <h2 class="font-semibold">{% trans 'Below minimum stock' %}</h2>
+      {% if low_stock %}<a href="{% url 'inventory:shopping_list' %}" class="text-sm text-emerald-700 hover:underline dark:text-emerald-400">{% trans 'Shopping list' %}</a>{% endif %}
     </header>
     {% if low_stock %}
-    <ul class="divide-y divide-stone-100 dark:divide-stone-800">
+    <ul class="divide-y divide-stone-100 dark:divide-white/5">
       {% for item in low_stock %}
       <li class="px-4 py-3">
         <div class="flex items-baseline justify-between gap-3">
           <a href="{{ item.get_absolute_url }}" class="block truncate font-medium hover:underline">{{ item.name }}</a>
           <p class="shrink-0 text-sm tabular-nums text-stone-500 dark:text-stone-400">{{ item.total|floatformat:"-3" }} / {{ item.min_stock|floatformat:"-3" }} {{ item.unit_symbol }}</p>
         </div>
-        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
-          <div class="h-full rounded-full bg-red-500" style="width: {{ item.percent }}%"></div>
+        <div class="track mt-2">
+          {% widthratio item.total item.min_stock 100 as percent %}
+          <div class="h-full rounded-full bg-red-500" style="width: {{ percent }}%"></div>
         </div>
       </li>
       {% endfor %}
     </ul>
     {% if low_stock_count > low_stock|length %}
-    <p class="border-t border-stone-100 px-4 py-2 text-sm text-stone-500 dark:border-stone-800 dark:text-stone-400">{% blocktrans with shown=low_stock|length %}Showing {{ shown }} of {{ low_stock_count }}.{% endblocktrans %}</p>
+    <p class="border-t border-stone-100 px-4 py-2 text-sm text-stone-500 dark:border-white/5 dark:text-stone-400">{% blocktrans with shown=low_stock|length %}Showing {{ shown }} of {{ low_stock_count }}.{% endblocktrans %}</p>
     {% endif %}
     {% else %}
     <p class="px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'All items are above their minimum.' %}</p>
@@ -86,29 +102,24 @@
 
 {% for widget in widgets %}{{ widget }}{% endfor %}
 
-<section class="mt-6 rounded-2xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-  <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800">
-    <h2 class="font-semibold">{% trans 'Categories' %}</h2>
+<section class="card mt-6 overflow-hidden">
+  <header class="border-b border-stone-200/80 px-4 py-3 dark:border-white/10">
+    <h2 class="font-semibold">{% trans 'By category' %}</h2>
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Items per category and batches holding stock.' %}</p>
   </header>
-  <table class="w-full text-sm">
-    <thead class="text-left text-stone-500 dark:text-stone-400">
-      <tr>
-        <th class="px-4 py-2 font-medium">{% trans 'Category' %}</th>
-        <th class="px-4 py-2 text-right font-medium">{% trans 'Items' %}</th>
-        <th class="px-4 py-2 text-right font-medium">{% trans 'Batches in stock' %}</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
-      {% for category in categories %}
-      <tr>
-        <td class="px-4 py-2.5 font-medium">{{ category.name }}</td>
-        <td class="px-4 py-2.5 text-right tabular-nums">{{ category.item_count }}</td>
-        <td class="px-4 py-2.5 text-right tabular-nums">{{ category.batch_count }}</td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="3" class="px-4 py-8 text-center text-stone-500 dark:text-stone-400">{% trans 'No categories yet.' %}</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  {% if categories %}
+  <ul class="divide-y divide-stone-100 dark:divide-white/5">
+    {% for category in categories %}
+    <li class="grid grid-cols-[minmax(0,9rem)_1fr_auto] items-center gap-4 px-4 py-3 text-sm sm:grid-cols-[minmax(0,12rem)_1fr_auto]">
+      <span class="truncate font-medium">{{ category.name }}</span>
+      {% widthratio category.item_count biggest_category 100 as percent %}
+      <div class="track"><div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400" style="width: {{ percent }}%"></div></div>
+      <span class="text-right tabular-nums text-stone-500 dark:text-stone-400">{% blocktrans count n=category.item_count %}{{ n }} item{% plural %}{{ n }} items{% endblocktrans %} · {% blocktrans count n=category.batch_count %}{{ n }} batch{% plural %}{{ n }} batches{% endblocktrans %}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No categories yet.' %}</p>
+  {% endif %}
 </section>
 {% endblock %}

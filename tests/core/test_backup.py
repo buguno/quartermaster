@@ -6,7 +6,7 @@ from decimal import Decimal
 from http import HTTPStatus
 
 import pytest
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.urls import reverse
@@ -15,14 +15,21 @@ from apps.core import backup
 from apps.core.exceptions import BackupError
 from apps.core.models import UserProfile
 from apps.inventory import services
-from apps.inventory.models import Batch, Category, Item, Location
+from apps.inventory.models import (
+    Batch,
+    Category,
+    Item,
+    Location,
+    StockMovement,
+)
+from tests.fakes import PASSPHRASE, PASSWORD
 from tests.inventory.factories import (
     CategoryFactory,
     ItemFactory,
     LocationFactory,
 )
 
-PASSPHRASE = 'correct horse battery'
+STOCKED_MOVEMENTS = 2  # the entry and the exit of the `stocked` fixture
 
 needs_gpg = pytest.mark.skipif(
     shutil.which('gpg') is None, reason='gpg is not installed'
@@ -56,8 +63,6 @@ def _settle():
 
 
 def _wipe():
-    from apps.inventory.models import StockMovement  # noqa: PLC0415
-
     StockMovement.objects.all().delete()
     Batch.objects.all().delete()
     Item.objects.all().delete()
@@ -66,17 +71,14 @@ def _wipe():
     _settle()
 
 
-# --- Helpers --------------------------------------------------------------
-
-
 def test_filename_is_timestamped():
     name = backup.filename(datetime(2026, 11, 5, 9, 30, 15))
 
-    assert name == 'quartermaster-20261105-093015.backup.gpg'
+    assert name == 'vault-20261105-093015.backup.gpg'
 
 
 def test_filename_defaults_to_now():
-    assert backup.filename().startswith('quartermaster-')
+    assert backup.filename().startswith('vault-')
 
 
 def test_missing_gpg_is_reported(monkeypatch):
@@ -84,9 +86,6 @@ def test_missing_gpg_is_reported(monkeypatch):
 
     with pytest.raises(BackupError, match='GnuPG'):
         backup.encrypt(b'data', PASSPHRASE)
-
-
-# --- Encryption -----------------------------------------------------------
 
 
 @needs_gpg
@@ -105,7 +104,7 @@ def test_the_file_is_a_standard_gpg_file(tmp_path):
     home = tmp_path / 'home'
     home.mkdir(mode=0o700)
 
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(
         [
             'gpg',
             '--batch',
@@ -142,27 +141,26 @@ def test_a_tampered_file_is_rejected():
         backup.decrypt(bytes(encrypted), PASSPHRASE)
 
 
-# --- Export and restore ---------------------------------------------------
-
-
 @needs_gpg
 def test_restore_brings_everything_back(stocked, user):
     exported = backup.export_backup(PASSPHRASE)
     _wipe()
-    get_user_model().objects.all().delete()
+    User.objects.all().delete()
     _settle()
     assert not Item.objects.exists()
 
     backup.restore_backup(exported, PASSPHRASE)
 
     item = Item.objects.get(name='Rice')
-    restored_user = get_user_model().objects.get(username=user.username)
-    assert item.kcal_per_unit == Decimal(3600)  # noqa: PLR2004
+    restored_user = User.objects.get(username=user.username)
+    assert item.kcal_per_unit == Decimal(3600)
     assert services.get_stock(item) == Decimal(3)
-    assert item.batches.get().movements.count() == 2  # noqa: PLR2004
-    assert restored_user.check_password('s3cret-pass')
-    assert restored_user.profile.theme == 'dark'
-    assert item.batches.get().movements.first().user == restored_user
+    batch = Batch.objects.get(item=item)
+    movements = StockMovement.objects.filter(batch=batch)
+    assert movements.count() == STOCKED_MOVEMENTS
+    assert restored_user.check_password(PASSWORD)
+    assert UserProfile.objects.get(user=restored_user).theme == 'dark'
+    assert {m.user for m in movements} == {restored_user}
 
 
 @needs_gpg
@@ -186,7 +184,7 @@ def test_new_rows_get_fresh_ids_after_a_restore(stocked):
     created = ItemFactory(category=Category.objects.get(), name='New')
     created.save()
 
-    assert Item.objects.count() == 2  # noqa: PLR2004
+    assert Item.objects.count() == 2
 
 
 @needs_gpg
@@ -262,7 +260,7 @@ def test_damaged_data_is_rolled_back(stocked, data):
     document = {
         'format': backup.FORMAT,
         'version': backup.VERSION,
-        'schema': backup._schema_state(),  # noqa: SLF001
+        'schema': backup._schema_state(),
         'data': data,
     }
     encrypted = backup.encrypt(json.dumps(document).encode(), PASSPHRASE)
@@ -272,9 +270,6 @@ def test_damaged_data_is_rolled_back(stocked, data):
 
     assert Item.objects.filter(name='Rice').exists()
     assert services.get_stock(Item.objects.get(name='Rice')) == Decimal(3)
-
-
-# --- Views ----------------------------------------------------------------
 
 
 @pytest.fixture

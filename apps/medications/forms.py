@@ -21,12 +21,14 @@ class MedicationForm(StyledFormMixin, forms.ModelForm):
         }
 
     def clean(self):
-        cleaned = super().clean()
-        value = cleaned.get('strength_value')
-        unit = cleaned.get('strength_unit')
+        super().clean()
+        value = self.cleaned_data.get('strength_value')
+        unit = self.cleaned_data.get('strength_unit')
+
         if (value is None) != (not unit):
             self.add_error(
                 'strength_unit',
                 _('Fill in both the strength and its unit, or neither.'),
             )
-        return cleaned
+
+        return self.cleaned_data

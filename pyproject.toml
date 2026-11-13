@@ -1,6 +1,6 @@
 [project]
-name = "quartermaster"
-version = "1.0.0"
+name = "vault"
+version = "1.1.0"
 description = ""
 authors = [
     {name = "buguno",email = "brunnodesouzabezerra@gmail.com"}
@@ -25,7 +25,9 @@ dev = [
     "pytest-random-order (>=1.2.0,<2.0.0)",
     "factory-boy (>=3.3.3,<4.0.0)",
     "freezegun (>=1.5.5,<2.0.0)",
-    "testcontainers[postgres] (>=4.15.0,<5.0.0)"
+    "testcontainers[postgres] (>=4.15.0,<5.0.0)",
+    "django-stubs (>=6.1.2,<7.0.0)",
+    "faker (>=40.54.0,<41.0.0)"
 ]
 
 [tool.poetry]
@@ -45,6 +47,7 @@ select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'DJ']
 
 [tool.ruff.lint.per-file-ignores]
 'manage.py' = ['PLC0415']
+'tests/**' = ['PLR2004']
 
 [tool.ruff.format]
 preview = true
