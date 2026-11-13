@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{{ title }} · Quartermaster{% endblock %}
+{% block title %}{% firstof title view.title %} · V.A.U.L.T{% endblock %}
 {% block content %}
+{% firstof title view.title as page_title %}
 <div class="mx-auto max-w-lg">
-  <h1 class="mb-4 text-2xl font-semibold tracking-tight">{{ title }}</h1>
+  <h1 class="mb-4 text-2xl font-semibold tracking-tight">{{ page_title }}</h1>
   <form method="post" class="card space-y-4 p-5">
     {% csrf_token %}
     {% include 'partials/form_fields.html' %}
     <div class="flex justify-end gap-2 pt-2">
-      <a href="{{ cancel_url }}" class="btn-secondary">{% trans 'Cancel' %}</a>
+      <a href="{% firstof cancel_url view.get_cancel_url %}" class="btn-secondary">{% trans 'Cancel' %}</a>
       <button type="submit" class="btn-primary">{% trans 'Save' %}</button>
     </div>
   </form>
