@@ -3,8 +3,8 @@
   <div class="flex flex-wrap items-start justify-between gap-3">
     <h2 class="font-semibold">{% trans 'Ammunition' %}</h2>
     <div class="flex gap-2">
-      <a href="{% url 'ammunition:edit' item.pk %}" class="btn-secondary">{% trans 'Edit' %}</a>
-      <a href="{% url 'ammunition:usage_create' item.pk %}" class="btn-primary">{% trans 'Record usage' %}</a>
+      <a href="{% url 'ammunition:edit' item.pk %}" data-write class="btn-secondary">{% trans 'Edit' %}</a>
+      <a href="{% url 'ammunition:usage_create' item.pk %}" class="btn-primary" data-write>{% trans 'Record usage' %}</a>
     </div>
   </div>
   <dl class="mt-3 grid gap-3 text-sm sm:grid-cols-4">
@@ -14,12 +14,12 @@
     <div><dt class="text-stone-500 dark:text-stone-400">{% trans 'Manufacturer' %}</dt><dd class="font-medium">{{ ammunition.manufacturer|default:"—" }}</dd></div>
   </dl>
   {% if usage %}
-  <div class="mt-4 border-t border-stone-100 pt-3 dark:border-stone-800">
+  <div class="mt-4 border-t border-stone-100 pt-3 dark:border-white/10">
     <div class="mb-2 flex items-center justify-between">
       <h3 class="text-sm font-semibold">{% trans 'Recent usage' %}</h3>
       <a href="{% url 'ammunition:usage_list' %}" class="text-sm text-emerald-700 hover:underline dark:text-emerald-400">{% trans 'See all' %}</a>
     </div>
-    <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+    <ul class="divide-y divide-stone-100 text-sm dark:divide-white/5">
       {% for entry in usage %}
       <li class="flex items-center justify-between gap-3 py-2">
         <span>{{ entry.used_at|date:'SHORT_DATE_FORMAT' }} · {{ entry.get_reason_display }}{% if entry.batch.lot_code %} · {{ entry.batch.lot_code }}{% endif %}</span>
