@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Quartermaster\n"
+"Project-Id-Version: V.A.U.L.T\n"
 "Report-Msgid-Bugs-To: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
@@ -8,1751 +8,1791 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: apps/ammunition/forms.py:38
 msgid "Ammunition must be counted in units or cartridges."
 msgstr "A munição deve ser contada em unidades ou cartuchos."
 
-#: apps/ammunition/forms.py:46 templates/ammunition/usage_list.html:24
-msgid "Lot"
-msgstr "Lote"
-
-#: apps/ammunition/forms.py:47
-msgid "Select a lot"
-msgstr "Selecione um lote"
-
-#: apps/ammunition/forms.py:50 templates/ammunition/list.html:42
-#: templates/ammunition/usage_list.html:25
-msgid "Rounds"
-msgstr "Cartuchos"
-
-#: apps/ammunition/forms.py:55 apps/inventory/forms.py:130
-#: apps/inventory/forms.py:153 apps/inventory/forms.py:168
-#: apps/inventory/forms.py:178 templates/ammunition/usage_list.html:26
-msgid "Reason"
-msgstr "Motivo"
-
-#: apps/ammunition/forms.py:58 templates/ammunition/usage_list.html:22
-msgid "Date"
-msgstr "Data"
-
-#: apps/ammunition/forms.py:60
-msgid "Notes"
-msgstr "Observações"
-
-#: apps/ammunition/forms.py:75
 msgid "no lot code"
 msgstr "sem código de lote"
 
-#: apps/ammunition/forms.py:86
+msgid "Lot"
+msgstr "Lote"
+
+msgid "Select a lot"
+msgstr "Selecione um lote"
+
+msgid "Rounds"
+msgstr "Cartuchos"
+
+msgid "Reason"
+msgstr "Motivo"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Notes"
+msgstr "Observações"
+
+#, python-format
 msgid "Only %(available)s rounds in this lot."
 msgstr "Só há %(available)s cartuchos neste lote."
 
-#: apps/ammunition/models.py:15 apps/inventory/models.py:207
-#: apps/inventory/models.py:246 apps/kits/models.py:45
-#: apps/medications/models.py:39
 msgid "item"
 msgstr "item"
 
-#: apps/ammunition/models.py:17
 msgid "caliber"
 msgstr "calibre"
 
-#: apps/ammunition/models.py:19
 msgid "bullet weight (gr)"
 msgstr "peso do projétil (gr)"
 
-#: apps/ammunition/models.py:25
 msgid "bullet type"
 msgstr "tipo de projétil"
 
-#: apps/ammunition/models.py:27
 msgid "manufacturer"
 msgstr "fabricante"
 
-#: apps/ammunition/models.py:31 apps/ammunition/models.py:32
 msgid "ammunition"
 msgstr "munição"
 
-#: apps/ammunition/models.py:51
 msgid "Training"
 msgstr "Treino"
 
-#: apps/ammunition/models.py:52
 msgid "Match"
 msgstr "Competição"
 
-#: apps/ammunition/models.py:53
 msgid "Rotation"
 msgstr "Rotação"
 
-#: apps/ammunition/models.py:59 apps/inventory/models.py:264
-#: apps/inventory/models.py:313
 msgid "batch"
 msgstr "lote"
 
-#: apps/ammunition/models.py:61
 msgid "rounds"
 msgstr "cartuchos"
 
-#: apps/ammunition/models.py:62 apps/inventory/models.py:319
 msgid "reason"
 msgstr "motivo"
 
-#: apps/ammunition/models.py:63
 msgid "date"
 msgstr "data"
 
-#: apps/ammunition/models.py:64 apps/inventory/models.py:203
 msgid "notes"
 msgstr "observações"
 
-#: apps/ammunition/models.py:71 apps/core/models.py:26
-#: apps/inventory/models.py:326
 msgid "user"
 msgstr "usuário"
 
-#: apps/ammunition/models.py:82 apps/ammunition/models.py:83
 msgid "ammunition usage"
 msgstr "uso de munição"
 
-#: apps/ammunition/panels.py:26
 msgid "Add ammunition details"
 msgstr "Adicionar dados de munição"
 
-#: apps/ammunition/services.py:80
 msgid "This item is not registered as ammunition."
 msgstr "Este item não está cadastrado como munição."
 
-#: apps/ammunition/views.py:63
 msgid "Ammunition created."
 msgstr "Munição criada."
 
-#: apps/ammunition/views.py:67 templates/ammunition/list.html:9
 msgid "New ammunition"
 msgstr "Nova munição"
 
-#: apps/ammunition/views.py:68 apps/inventory/views.py:429
-#: apps/kits/forms.py:42 apps/medications/views.py:45
-#: templates/inventory/partials/item_results.html:5
-#: templates/kits/detail.html:41
 msgid "Item"
 msgstr "Item"
 
-#: apps/ammunition/views.py:68 apps/ammunition/views.py:91
-#: templates/ammunition/list.html:3 templates/ammunition/list.html:6
-#: templates/ammunition/list.html:38
-#: templates/ammunition/partials/item_panel.html:4
-#: templates/ammunition/usage_list.html:6
-#: templates/ammunition/usage_list.html:23 templates/partials/nav_links.html:6
 msgid "Ammunition"
 msgstr "Munição"
 
-#: apps/ammunition/views.py:86
 msgid "Ammunition details saved."
 msgstr "Dados da munição salvos."
 
-#: apps/ammunition/views.py:113
 msgid "Usage recorded."
 msgstr "Uso registrado."
 
-#: apps/ammunition/views.py:117 templates/ammunition/partials/item_panel.html:7
 msgid "Record usage"
 msgstr "Registrar uso"
 
-#: apps/autonomy/models.py:8
 msgid "people"
 msgstr "pessoas"
 
-#: apps/autonomy/models.py:10
 msgid "calories per person per day (kcal)"
 msgstr "calorias por pessoa por dia (kcal)"
 
-#: apps/autonomy/models.py:13
 msgid "water per person per day (L)"
 msgstr "água por pessoa por dia (L)"
 
-#: apps/autonomy/models.py:20 apps/autonomy/models.py:21
 msgid "household"
 msgstr "residência"
 
-#: apps/autonomy/views.py:18
 msgid "Household saved."
 msgstr "Residência salva."
 
-#: apps/core/backup.py:51
+msgid "Overall"
+msgstr "Geral"
+
+msgid "Food"
+msgstr "Comida"
+
+msgid "Water"
+msgstr "Água"
+
 msgid "GnuPG (gpg) is not installed on this machine."
 msgstr "O GnuPG (gpg) não está instalado nesta máquina."
 
-#: apps/core/backup.py:94
 msgid "Wrong passphrase, or the file is not a valid backup."
 msgstr "Senha incorreta ou arquivo de backup inválido."
 
-#: apps/core/backup.py:149 apps/core/backup.py:159
-msgid "The file is not a Quartermaster backup."
-msgstr "O arquivo não é um backup do Quartermaster."
+msgid "The file is not a V.A.U.L.T backup."
+msgstr "O arquivo não é um backup do V.A.U.L.T."
 
-#: apps/core/backup.py:162
 msgid "This backup was made by a different version of the system."
 msgstr "Este backup foi feito por outra versão do sistema."
 
-#: apps/core/backup.py:186
 msgid "The backup data is damaged and nothing was changed."
 msgstr "Os dados do backup estão danificados e nada foi alterado."
 
-#: apps/core/forms.py:30 apps/core/forms.py:65
 msgid "Passphrase"
 msgstr "Senha do backup"
 
-#: apps/core/forms.py:35
-msgid "Needed to restore the backup. It is not stored anywhere: if you lose it, the backup cannot be opened."
-msgstr "Necessária para restaurar o backup. Não é guardada em lugar nenhum: se você a perder, o backup não poderá ser aberto."
+msgid ""
+"Needed to restore the backup. It is not stored anywhere: if you lose it, the "
+"backup cannot be opened."
+msgstr ""
+"Necessária para restaurar o backup. Não é guardada em lugar nenhum: se você "
+"a perder, o backup não poderá ser aberto."
 
-#: apps/core/forms.py:40
 msgid "Repeat the passphrase"
 msgstr "Repita a senha do backup"
 
-#: apps/core/forms.py:49
 msgid "The passphrase cannot contain line breaks."
 msgstr "A senha não pode conter quebras de linha."
 
-#: apps/core/forms.py:57
 msgid "The passphrases do not match."
 msgstr "As senhas não coincidem."
 
-#: apps/core/forms.py:63
 msgid "Backup file"
 msgstr "Arquivo de backup"
 
-#: apps/core/forms.py:70
 msgid "I understand this replaces all current data"
 msgstr "Entendo que isto substitui todos os dados atuais"
 
-#: apps/core/models.py:18
-msgid "Follow the system"
-msgstr "Seguir o sistema"
-
-#: apps/core/models.py:19
-msgid "Light"
-msgstr "Claro"
-
-#: apps/core/models.py:20
-msgid "Dark"
-msgstr "Escuro"
-
-#: apps/core/models.py:29
-msgid "Theme"
-msgstr "Tema"
-
-#: apps/core/models.py:31 templates/partials/language_switcher.html:7
 msgid "Language"
 msgstr "Idioma"
 
-#: apps/core/models.py:34
+msgid "Setup code"
+msgstr "Código de configuração"
+
+msgid ""
+"Printed in the terminal where the server is running, like ABCD-EFGH-IJKL."
+msgstr ""
+"Impresso no terminal onde o servidor está rodando, como ABCD-EFGH-IJKL."
+
+msgid "Username"
+msgstr "Usuário"
+
+msgid "Password"
+msgstr "Senha"
+
+msgid "Repeat the password"
+msgstr "Repita a senha"
+
+msgid "That is not the setup code."
+msgstr "Esse não é o código de configuração."
+
+msgid "The passwords do not match."
+msgstr "As senhas não coincidem."
+
+msgid "This account is read-only and cannot change anything."
+msgstr "Esta conta é somente leitura e não pode alterar nada."
+
+msgid "Follow the system"
+msgstr "Seguir o sistema"
+
+msgid "Light"
+msgstr "Claro"
+
+msgid "Dark"
+msgstr "Escuro"
+
+msgid "Theme"
+msgstr "Tema"
+
+msgid "read-only account"
+msgstr "conta somente leitura"
+
+msgid ""
+"Can look at everything but cannot change anything. Does not apply to "
+"superusers."
+msgstr "Pode ver tudo, mas não pode alterar nada. Não vale para superusuários."
+
 msgid "user profile"
 msgstr "perfil de usuário"
 
-#: apps/core/models.py:35
 msgid "user profiles"
 msgstr "perfis de usuário"
 
-#: apps/core/templatetags/ages.py:27
+msgid "The system is already set up."
+msgstr "O sistema já está configurado."
+
+#, python-format
 msgid "%(count)s year"
 msgid_plural "%(count)s years"
 msgstr[0] "%(count)s ano"
 msgstr[1] "%(count)s anos"
 
-#: apps/core/templatetags/ages.py:32
+#, python-format
 msgid "%(count)s month"
 msgid_plural "%(count)s months"
 msgstr[0] "%(count)s mês"
 msgstr[1] "%(count)s meses"
 
-#: apps/core/templatetags/ages.py:36
 msgid "less than 1 month"
 msgstr "menos de 1 mês"
 
-#: apps/core/templatetags/ages.py:37
 msgid " and "
 msgstr " e "
 
-#: apps/core/views.py:69
 msgid "Preferences saved."
 msgstr "Preferências salvas."
 
-#: apps/core/views.py:87
 msgid "Password changed."
 msgstr "Senha alterada."
 
-#: apps/core/views.py:124
 msgid "Backup restored. Sign in again."
 msgstr "Backup restaurado. Entre novamente."
 
-#: apps/inventory/alerts.py:27
+msgid "Welcome! Your account is ready."
+msgstr "Bem-vindo! Sua conta está pronta."
+
+#, python-format
 msgid "Expired on %(date)s"
 msgstr "Venceu em %(date)s"
 
-#: apps/inventory/alerts.py:29
+#, python-format
 msgid "Expires on %(date)s (in %(days)s days)"
 msgstr "Vence em %(date)s (em %(days)s dias)"
 
-#: apps/inventory/alerts.py:36
 msgid "Expiry"
 msgstr "Validade"
 
-#: apps/inventory/alerts.py:50
 msgid "Low stock"
 msgstr "Estoque baixo"
 
-#: apps/inventory/alerts.py:52
+#, python-format
 msgid "%(total)s of the minimum %(minimum)s %(unit)s"
 msgstr "%(total)s de %(minimum)s %(unit)s (mínimo)"
 
-#: apps/inventory/forms.py:48
 msgid "The unit cannot change once the item has batches."
 msgstr "A unidade não pode mudar depois que o item tem lotes."
 
-#: apps/inventory/forms.py:68
-msgid "Used to suggest the expiry date from the packaging date. 12 months = 1 year."
-msgstr "Usado para sugerir a validade a partir da data de envasamento. 12 meses = 1 ano."
+msgid ""
+"Used to suggest the expiry date from the packaging date. 12 months = 1 year."
+msgstr ""
+"Usado para sugerir a validade a partir da data de envasamento. 12 meses = 1 "
+"ano."
 
-#: apps/inventory/forms.py:84
 msgid "Only items counted in liters or milliliters can be water."
 msgstr "Só itens contados em litros ou mililitros podem ser água."
 
-#: apps/inventory/forms.py:104 apps/inventory/views.py:431
-#: apps/kits/forms.py:16 templates/inventory/partials/stock_panel.html:50
 msgid "Location"
 msgstr "Local"
 
-#: apps/inventory/forms.py:105 apps/inventory/forms.py:175
 msgid "Select a location"
 msgstr "Selecione um local"
 
-#: apps/inventory/forms.py:107 apps/inventory/forms.py:152
-#: apps/inventory/forms.py:177 apps/inventory/views.py:433
-#: templates/inventory/partials/stock_panel.html:54
 msgid "Quantity"
 msgstr "Quantidade"
 
-#: apps/inventory/forms.py:109 apps/inventory/views.py:436
 msgid "Packaged at"
 msgstr "Data de envasamento"
 
-#: apps/inventory/forms.py:112
 msgid "When you packed it yourself, e.g. vacuum-sealed grains."
 msgstr "Quando você mesmo embalou, ex.: grãos selados a vácuo."
 
-#: apps/inventory/forms.py:115 apps/inventory/views.py:435
 msgid "Manufactured at"
 msgstr "Data de fabricação"
 
-#: apps/inventory/forms.py:120 apps/inventory/views.py:437
-#: templates/inventory/partials/stock_panel.html:18
-#: templates/inventory/partials/stock_panel.html:53
 msgid "Expires at"
 msgstr "Validade"
 
-#: apps/inventory/forms.py:124
 msgid "Leave blank to use the item's shelf life, if it has one."
 msgstr "Deixe em branco para usar a vida útil do item, se ele tiver."
 
-#: apps/inventory/forms.py:128 apps/inventory/views.py:432
-#: templates/inventory/partials/stock_panel.html:51
 msgid "Lot code"
 msgstr "Código do lote"
 
-#: apps/inventory/forms.py:149
+msgid "Unit cost"
+msgstr "Custo unitário"
+
+msgid "Price paid per unit. Averaged into the batch cost."
+msgstr "Preço pago por unidade. Entra na média do custo do lote."
+
 msgid "Take from"
 msgstr "Retirar de"
 
-#: apps/inventory/forms.py:150
 msgid "Automatic (expires first, oldest first)"
 msgstr "Automático (vence primeiro, sai primeiro)"
 
-#: apps/inventory/forms.py:167
 msgid "Counted quantity"
 msgstr "Quantidade contada"
 
-#: apps/inventory/forms.py:174
 msgid "Destination"
 msgstr "Destino"
 
-#: apps/inventory/models.py:11 apps/inventory/models.py:23
-#: apps/inventory/models.py:177 apps/kits/models.py:11
+msgid "CSV file"
+msgstr "Arquivo CSV"
+
+#, python-format
+msgid "The file is too large (limit: %(limit)s KB)."
+msgstr "O arquivo é grande demais (limite: %(limit)s KB)."
+
+#, python-format
+msgid "Line %(line)s: %(problem)s"
+msgstr "Linha %(line)s: %(problem)s"
+
+#, python-format
+msgid "\"%(column)s\" is empty."
+msgstr "\"%(column)s\" está vazio."
+
+msgid "\"quantity\" is not a number."
+msgstr "\"quantity\" não é um número."
+
+msgid "\"quantity\" must be greater than zero."
+msgstr "\"quantity\" deve ser maior que zero."
+
+#, python-format
+msgid "unknown unit \"%(unit)s\"."
+msgstr "unidade desconhecida \"%(unit)s\"."
+
+msgid "\"unit_cost\" is not a number."
+msgstr "\"unit_cost\" não é um número."
+
+msgid "\"unit_cost\" cannot be negative."
+msgstr "\"unit_cost\" não pode ser negativo."
+
+#, python-format
+msgid "\"%(column)s\" must look like 2027-06-30 or 30/06/2027."
+msgstr "\"%(column)s\" deve ter o formato 2027-06-30 ou 30/06/2027."
+
+#, python-format
+msgid "Missing columns: %(columns)s."
+msgstr "Faltam as colunas: %(columns)s."
+
+#, python-format
+msgid "Too many rows: the limit is %(limit)s."
+msgstr "Linhas demais: o limite é %(limit)s."
+
+#, python-format
+msgid "… and %(count)s more problems."
+msgstr "… e mais %(count)s problemas."
+
+msgid "The file has no rows."
+msgstr "O arquivo não tem linhas."
+
+#, python-format
+msgid ""
+"Line %(line)s: \"%(item)s\" is counted in \"%(unit)s\", not \"%(wrong)s\"."
+msgstr ""
+"Linha %(line)s: \"%(item)s\" é contado em \"%(unit)s\", não em \"%(wrong)s\"."
+
+msgid "CSV import"
+msgstr "Importação CSV"
+
+msgid "Unknown"
+msgstr "Desconhecido"
+
 msgid "name"
 msgstr "nome"
 
-#: apps/inventory/models.py:15 apps/inventory/models.py:182
 msgid "category"
 msgstr "categoria"
 
-#: apps/inventory/models.py:16
 msgid "categories"
 msgstr "categorias"
 
-#: apps/inventory/models.py:25 apps/kits/models.py:13
 msgid "description"
 msgstr "descrição"
 
-#: apps/inventory/models.py:30 apps/inventory/models.py:252
-#: apps/kits/models.py:19
 msgid "location"
 msgstr "local"
 
-#: apps/inventory/models.py:31
 msgid "locations"
 msgstr "locais"
 
-#: apps/inventory/models.py:39
 msgctxt "unit symbol"
 msgid "ea"
 msgstr "un"
 
-#: apps/inventory/models.py:40
 msgctxt "unit symbol"
 msgid "pr"
 msgstr "par"
 
-#: apps/inventory/models.py:41
 msgctxt "unit symbol"
 msgid "doz"
 msgstr "dz"
 
-#: apps/inventory/models.py:42
 msgctxt "unit symbol"
 msgid "kit"
 msgstr "kit"
 
-#: apps/inventory/models.py:43
 msgctxt "unit symbol"
 msgid "box"
 msgstr "cx"
 
-#: apps/inventory/models.py:44
 msgctxt "unit symbol"
 msgid "pack"
 msgstr "pct"
 
-#: apps/inventory/models.py:45
 msgctxt "unit symbol"
 msgid "bag"
 msgstr "saco"
 
-#: apps/inventory/models.py:46
 msgctxt "unit symbol"
 msgid "roll"
 msgstr "rolo"
 
-#: apps/inventory/models.py:47
 msgctxt "unit symbol"
 msgid "can"
 msgstr "lata"
 
-#: apps/inventory/models.py:48
 msgctxt "unit symbol"
 msgid "bottle"
 msgstr "garrafa"
 
-#: apps/inventory/models.py:49
 msgctxt "unit symbol"
 msgid "jar"
 msgstr "pote"
 
-#: apps/inventory/models.py:50
 msgctxt "unit symbol"
 msgid "vial"
 msgstr "fr"
 
-#: apps/inventory/models.py:51
 msgctxt "unit symbol"
 msgid "sachet"
 msgstr "sachê"
 
-#: apps/inventory/models.py:52
 msgctxt "unit symbol"
 msgid "cartridge"
 msgstr "cartucho"
 
-#: apps/inventory/models.py:53
 msgctxt "unit symbol"
 msgid "tab"
 msgstr "comp"
 
-#: apps/inventory/models.py:54
 msgctxt "unit symbol"
 msgid "cap"
 msgstr "cáps"
 
-#: apps/inventory/models.py:55
 msgctxt "unit symbol"
 msgid "amp"
 msgstr "amp"
 
-#: apps/inventory/models.py:56
 msgctxt "unit symbol"
 msgid "blister"
 msgstr "cartela"
 
-#: apps/inventory/models.py:57
 msgctxt "unit symbol"
 msgid "gtt"
 msgstr "gt"
 
-#: apps/inventory/models.py:58
 msgctxt "unit symbol"
 msgid "dose"
 msgstr "dose"
 
-#: apps/inventory/models.py:59
 msgctxt "unit symbol"
 msgid "IU"
 msgstr "UI"
 
-#: apps/inventory/models.py:60
 msgctxt "unit symbol"
 msgid "mcg"
 msgstr "mcg"
 
-#: apps/inventory/models.py:61
 msgctxt "unit symbol"
 msgid "mg"
 msgstr "mg"
 
-#: apps/inventory/models.py:62
 msgctxt "unit symbol"
 msgid "ct"
 msgstr "ct"
 
-#: apps/inventory/models.py:63
 msgctxt "unit symbol"
 msgid "g"
 msgstr "g"
 
-#: apps/inventory/models.py:64
 msgctxt "unit symbol"
 msgid "oz"
 msgstr "oz"
 
-#: apps/inventory/models.py:65
 msgctxt "unit symbol"
 msgid "ozt"
 msgstr "ozt"
 
-#: apps/inventory/models.py:66
 msgctxt "unit symbol"
 msgid "kg"
 msgstr "kg"
 
-#: apps/inventory/models.py:67
 msgctxt "unit symbol"
 msgid "mL"
 msgstr "mL"
 
-#: apps/inventory/models.py:68
 msgctxt "unit symbol"
 msgid "L"
 msgstr "L"
 
-#: apps/inventory/models.py:69
 msgctxt "unit symbol"
 msgid "cm"
 msgstr "cm"
 
-#: apps/inventory/models.py:70
 msgctxt "unit symbol"
 msgid "m"
 msgstr "m"
 
-#: apps/inventory/models.py:77 apps/inventory/models.py:185
 msgid "unit"
 msgstr "unidade"
 
-#: apps/inventory/models.py:78
 msgid "pair"
 msgstr "par"
 
-#: apps/inventory/models.py:79
 msgid "dozen (dz)"
 msgstr "dúzia (dz)"
 
-#: apps/inventory/models.py:80 apps/kits/models.py:24 apps/kits/models.py:39
 msgid "kit"
 msgstr "kit"
 
-#: apps/inventory/models.py:81
 msgid "box (cx)"
 msgstr "caixa (cx)"
 
-#: apps/inventory/models.py:82
 msgid "pack (pct)"
 msgstr "pacote (pct)"
 
-#: apps/inventory/models.py:83
 msgid "bag"
 msgstr "saco"
 
-#: apps/inventory/models.py:84
 msgid "roll"
 msgstr "rolo"
 
-#: apps/inventory/models.py:85
 msgid "can"
 msgstr "lata"
 
-#: apps/inventory/models.py:86
 msgid "bottle"
 msgstr "garrafa"
 
-#: apps/inventory/models.py:87
 msgid "jar"
 msgstr "pote"
 
-#: apps/inventory/models.py:88
 msgid "vial (fr)"
 msgstr "frasco (fr)"
 
-#: apps/inventory/models.py:89
 msgid "sachet"
 msgstr "sachê"
 
-#: apps/inventory/models.py:90
 msgid "cartridge"
 msgstr "cartucho"
 
-#: apps/inventory/models.py:92
 msgid "tablet (comp)"
 msgstr "comprimido (comp)"
 
-#: apps/inventory/models.py:93
 msgid "capsule (caps)"
 msgstr "cápsula (cáps)"
 
-#: apps/inventory/models.py:94
 msgid "ampoule (amp)"
 msgstr "ampola (amp)"
 
-#: apps/inventory/models.py:95
 msgid "blister pack"
 msgstr "cartela"
 
-#: apps/inventory/models.py:96
 msgid "drop (gt)"
 msgstr "gota (gt)"
 
-#: apps/inventory/models.py:97
 msgid "dose"
 msgstr "dose"
 
-#: apps/inventory/models.py:98
 msgid "international unit (IU)"
 msgstr "unidade internacional (UI)"
 
-#: apps/inventory/models.py:100
 msgid "microgram (mcg)"
 msgstr "micrograma (mcg)"
 
-#: apps/inventory/models.py:101
 msgid "milligram (mg)"
 msgstr "miligrama (mg)"
 
-#: apps/inventory/models.py:102
 msgid "carat (ct)"
 msgstr "quilate (ct)"
 
-#: apps/inventory/models.py:103
 msgid "gram (g)"
 msgstr "grama (g)"
 
-#: apps/inventory/models.py:104
 msgid "ounce (oz)"
 msgstr "onça (oz)"
 
-#: apps/inventory/models.py:105
 msgid "troy ounce (ozt)"
 msgstr "onça troy (ozt)"
 
-#: apps/inventory/models.py:106
 msgid "kilogram (kg)"
 msgstr "quilograma (kg)"
 
-#: apps/inventory/models.py:108
 msgid "milliliter (mL)"
 msgstr "mililitro (mL)"
 
-#: apps/inventory/models.py:109
 msgid "liter (L)"
 msgstr "litro (L)"
 
-#: apps/inventory/models.py:111
 msgid "centimeter (cm)"
 msgstr "centímetro (cm)"
 
-#: apps/inventory/models.py:112
 msgid "meter (m)"
 msgstr "metro (m)"
 
-#: apps/inventory/models.py:116
 msgid "Count"
 msgstr "Contagem"
 
-#: apps/inventory/models.py:138 apps/medications/views.py:45
-#: apps/medications/views.py:68 templates/medications/list.html:17
-#: templates/medications/partials/item_panel.html:4
 msgid "Medication"
 msgstr "Medicamentos"
 
-#: apps/inventory/models.py:153
 msgid "Mass"
 msgstr "Massa"
 
-#: apps/inventory/models.py:168
 msgid "Volume"
 msgstr "Volume"
 
-#: apps/inventory/models.py:172
 msgid "Length"
 msgstr "Comprimento"
 
-#: apps/inventory/models.py:188
 msgid "minimum stock"
 msgstr "estoque mínimo"
 
-#: apps/inventory/models.py:191
 msgid "shelf life (months)"
 msgstr "vida útil (meses)"
 
-#: apps/inventory/models.py:194
 msgid "calories per unit (kcal)"
 msgstr "calorias por unidade (kcal)"
 
-#: apps/inventory/models.py:201
 msgid "counts as drinking water"
 msgstr "conta como água potável"
 
-#: apps/inventory/models.py:208
 msgid "items"
 msgstr "itens"
 
-#: apps/inventory/models.py:255 apps/inventory/models.py:317
 msgid "quantity"
 msgstr "quantidade"
 
-#: apps/inventory/models.py:257
 msgid "expires at"
 msgstr "validade"
 
-#: apps/inventory/models.py:258
 msgid "manufactured at"
 msgstr "data de fabricação"
 
-#: apps/inventory/models.py:259
 msgid "packaged at"
 msgstr "data de envasamento"
 
-#: apps/inventory/models.py:260
 msgid "lot code"
 msgstr "código do lote"
 
-#: apps/inventory/models.py:265
+msgid "unit cost"
+msgstr "custo unitário"
+
 msgid "batches"
 msgstr "lotes"
 
-#: apps/inventory/models.py:304
 msgid "entry"
 msgstr "entrada"
 
-#: apps/inventory/models.py:305
 msgid "exit"
 msgstr "saída"
 
-#: apps/inventory/models.py:306
 msgid "adjustment"
 msgstr "ajuste"
 
-#: apps/inventory/models.py:307
 msgid "transfer"
 msgstr "transferência"
 
-#: apps/inventory/models.py:315
 msgid "kind"
 msgstr "tipo"
 
-#: apps/inventory/models.py:332
 msgid "stock movement"
 msgstr "movimentação de estoque"
 
-#: apps/inventory/models.py:333
 msgid "stock movements"
 msgstr "movimentações de estoque"
 
-#: apps/inventory/services.py:70
 msgid "The manufacture date cannot be in the future."
 msgstr "A data de fabricação não pode estar no futuro."
 
-#: apps/inventory/services.py:72
 msgid "The packaging date cannot be in the future."
 msgstr "A data de envasamento não pode estar no futuro."
 
-#: apps/inventory/services.py:75
 msgid "The manufacture date cannot be after the packaging date."
 msgstr "A data de fabricação não pode ser depois da data de envasamento."
 
-#: apps/inventory/services.py:80
 msgid "The expiry date cannot be before manufacture or packaging."
 msgstr "A validade não pode ser anterior à fabricação ou ao envasamento."
 
-#: apps/inventory/services.py:86
+#, python-format
 msgid "Requested %(requested)s, only %(available)s available."
 msgstr "Pedido %(requested)s, apenas %(available)s disponível."
 
-#: apps/inventory/services.py:139 apps/inventory/services.py:186
-#: apps/inventory/services.py:227 apps/inventory/services.py:286
-#: apps/kits/services.py:144
+#, python-format
+msgid "%(kits)s more are in kits: choose the location to use them."
+msgstr "Mais %(kits)s estão em kits: escolha o local para usá-los."
+
 msgid "Quantity must be greater than zero."
 msgstr "A quantidade deve ser maior que zero."
 
-#: apps/inventory/services.py:253
+msgid "The unit cost cannot be negative."
+msgstr "O custo unitário não pode ser negativo."
+
 msgid "Quantity cannot be negative."
 msgstr "A quantidade não pode ser negativa."
 
-#: apps/inventory/services.py:292
 msgid "The destination must differ from the current location."
 msgstr "O destino deve ser diferente do local atual."
 
-#: apps/inventory/services.py:430
+#, python-format
+msgid "\"%(value)s\" is not a valid quantity."
+msgstr "\"%(value)s\" não é uma quantidade válida."
+
+msgid "Physical count"
+msgstr "Contagem física"
+
+#, python-format
 msgid "Item \"%(name)s\" has batches and cannot be deleted."
 msgstr "O item \"%(name)s\" tem lotes e não pode ser excluído."
 
-#: apps/inventory/services.py:439
+#, python-format
 msgid "Category \"%(name)s\" has items and cannot be deleted."
 msgstr "A categoria \"%(name)s\" tem itens e não pode ser excluída."
 
-#: apps/inventory/services.py:447
+#, python-format
 msgid "Location \"%(name)s\" is in use and cannot be deleted."
 msgstr "O local \"%(name)s\" está em uso e não pode ser excluído."
 
-#: apps/inventory/views.py:144 templates/inventory/item_list.html:9
+#, python-format
+msgid "Good morning, %(name)s"
+msgstr "Bom dia, %(name)s"
+
+#, python-format
+msgid "Good afternoon, %(name)s"
+msgstr "Boa tarde, %(name)s"
+
+#, python-format
+msgid "Good evening, %(name)s"
+msgstr "Boa noite, %(name)s"
+
 msgid "New item"
 msgstr "Novo item"
 
-#: apps/inventory/views.py:146
 msgid "Item created."
 msgstr "Item criado."
 
-#: apps/inventory/views.py:152
 msgid "Edit item"
 msgstr "Editar item"
 
-#: apps/inventory/views.py:153
 msgid "Item updated."
 msgstr "Item atualizado."
 
-#: apps/inventory/views.py:165
 msgid "Item deleted."
 msgstr "Item excluído."
 
-#: apps/inventory/views.py:260
 msgid "Entry recorded."
 msgstr "Entrada registrada."
 
-#: apps/inventory/views.py:281
 msgid "Exit recorded."
 msgstr "Saída registrada."
 
-#: apps/inventory/views.py:302
 msgid "Batch adjusted."
 msgstr "Lote ajustado."
 
-#: apps/inventory/views.py:326
 msgid "Stock transferred."
 msgstr "Estoque transferido."
 
-#: apps/inventory/views.py:354 templates/inventory/dashboard.html:91
-#: templates/partials/nav_links.html:10
 msgid "Categories"
 msgstr "Categorias"
 
-#: apps/inventory/views.py:355 templates/inventory/dashboard.html:12
-#: templates/inventory/dashboard.html:97 templates/inventory/item_detail.html:7
-#: templates/inventory/item_list.html:3 templates/inventory/item_list.html:6
-#: templates/partials/nav_links.html:4
 msgid "Items"
 msgstr "Itens"
 
-#: apps/inventory/views.py:365
 msgid "New category"
 msgstr "Nova categoria"
 
-#: apps/inventory/views.py:367
 msgid "Category created."
 msgstr "Categoria criada."
 
-#: apps/inventory/views.py:373
 msgid "Edit category"
 msgstr "Editar categoria"
 
-#: apps/inventory/views.py:375
 msgid "Category updated."
 msgstr "Categoria atualizada."
 
-#: apps/inventory/views.py:381
 msgid "Category deleted."
 msgstr "Categoria excluída."
 
-#: apps/inventory/views.py:390 templates/partials/nav_links.html:11
 msgid "Locations"
 msgstr "Locais"
 
-#: apps/inventory/views.py:391 templates/inventory/partials/stock_panel.html:45
 msgid "Batches"
 msgstr "Lotes"
 
-#: apps/inventory/views.py:401
 msgid "New location"
 msgstr "Novo local"
 
-#: apps/inventory/views.py:403
 msgid "Location created."
 msgstr "Local criado."
 
-#: apps/inventory/views.py:409
 msgid "Edit location"
 msgstr "Editar local"
 
-#: apps/inventory/views.py:411
 msgid "Location updated."
 msgstr "Local atualizado."
 
-#: apps/inventory/views.py:417
 msgid "Location deleted."
 msgstr "Local excluído."
 
-#: apps/inventory/views.py:430 templates/inventory/dashboard.html:96
-#: templates/inventory/partials/item_results.html:6
 msgid "Category"
 msgstr "Categoria"
 
-#: apps/inventory/views.py:434
 msgid "Unit"
 msgstr "Unidade"
 
-#: apps/kits/alerts.py:30
+#, python-format
+msgid "%(count)s batch adjusted."
+msgid_plural "%(count)s batches adjusted."
+msgstr[0] "%(count)s lote ajustado."
+msgstr[1] "%(count)s lotes ajustados."
+
+#, python-format
+msgid ""
+"%(entries)s entries imported (%(items)s new items, %(categories)s new "
+"categories, %(locations)s new locations)."
+msgstr ""
+"%(entries)s entradas importadas (%(items)s itens novos, %(categories)s "
+"categorias novas, %(locations)s locais novos)."
+
+#, python-format
 msgid "%(count)s item(s) incomplete"
 msgstr "%(count)s item(ns) incompleto(s)"
 
-#: apps/kits/alerts.py:33
+#, python-format
 msgid "%(count)s item(s) expired"
 msgstr "%(count)s item(ns) vencido(s)"
 
-#: apps/kits/alerts.py:35
+#, python-format
 msgid "%(count)s item(s) expiring"
 msgstr "%(count)s item(ns) vencendo"
 
-#: apps/kits/alerts.py:39 templates/kits/detail.html:7
-#: templates/kits/list.html:3 templates/kits/list.html:6
-#: templates/kits/partials/dashboard_summary.html:5
-#: templates/partials/nav_links.html:7
 msgid "Kits"
 msgstr "Kits"
 
-#: apps/kits/forms.py:17
 msgid "Create one named after the kit"
 msgstr "Criar um com o nome do kit"
 
-#: apps/kits/forms.py:18
 msgid "Stock in this location is checked against the list."
 msgstr "O estoque deste local é conferido com a lista."
 
-#: apps/kits/forms.py:43
 msgid "Select an item"
 msgstr "Selecione um item"
 
-#: apps/kits/forms.py:46
 msgid "Required quantity"
 msgstr "Quantidade necessária"
 
-#: apps/kits/models.py:25
 msgid "kits"
 msgstr "kits"
 
-#: apps/kits/models.py:48
 msgid "required quantity"
 msgstr "quantidade necessária"
 
-#: apps/kits/models.py:53
 msgid "kit item"
 msgstr "item do kit"
 
-#: apps/kits/models.py:54
 msgid "kit items"
 msgstr "itens do kit"
 
-#: apps/kits/services.py:133
+#, python-format
 msgid "Location \"%(name)s\" already belongs to another kit."
 msgstr "O local \"%(name)s\" já pertence a outro kit."
 
-#: apps/kits/views.py:31
 msgid "Kit created."
 msgstr "Kit criado."
 
-#: apps/kits/views.py:34
 msgid "Kit updated."
 msgstr "Kit atualizado."
 
-#: apps/kits/views.py:38 templates/kits/list.html:7
 msgid "New kit"
 msgstr "Novo kit"
 
-#: apps/kits/views.py:84
 msgid "Kit list updated."
 msgstr "Lista do kit atualizada."
 
-#: apps/kits/views.py:93
 msgid "Removed from the kit list."
 msgstr "Removido da lista do kit."
 
-#: apps/kits/views.py:100
 msgid "Kit deleted."
 msgstr "Kit excluído."
 
-#: apps/medications/forms.py:30
 msgid "Fill in both the strength and its unit, or neither."
 msgstr "Preencha a concentração e a unidade, ou nenhuma das duas."
 
-#: apps/medications/models.py:11
 msgid "mg"
 msgstr "mg"
 
-#: apps/medications/models.py:12
 msgid "mcg"
 msgstr "mcg"
 
-#: apps/medications/models.py:13
 msgid "g"
 msgstr "g"
 
-#: apps/medications/models.py:14
 msgid "mL"
 msgstr "mL"
 
-#: apps/medications/models.py:15
 msgid "IU"
 msgstr "UI"
 
-#: apps/medications/models.py:16
 msgid "%"
 msgstr "%"
 
-#: apps/medications/models.py:17
 msgid "mg/mL"
 msgstr "mg/mL"
 
-#: apps/medications/models.py:20
 msgid "Tablet"
 msgstr "Comprimido"
 
-#: apps/medications/models.py:21
 msgid "Capsule"
 msgstr "Cápsula"
 
-#: apps/medications/models.py:22
 msgid "Oral solution / syrup"
 msgstr "Solução oral / xarope"
 
-#: apps/medications/models.py:23
 msgid "Suspension"
 msgstr "Suspensão"
 
-#: apps/medications/models.py:24
 msgid "Oral drops"
 msgstr "Gotas orais"
 
-#: apps/medications/models.py:25
 msgid "Injection"
 msgstr "Injetável"
 
-#: apps/medications/models.py:26
 msgid "Cream / ointment"
 msgstr "Creme / pomada"
 
-#: apps/medications/models.py:27
 msgid "Eye drops"
 msgstr "Colírio"
 
-#: apps/medications/models.py:28
 msgid "Suppository"
 msgstr "Supositório"
 
-#: apps/medications/models.py:29
 msgid "Patch"
 msgstr "Adesivo"
 
-#: apps/medications/models.py:30
 msgid "Inhaler"
 msgstr "Inalador"
 
-#: apps/medications/models.py:31
 msgid "Powder"
 msgstr "Pó"
 
-#: apps/medications/models.py:32
 msgid "Spray"
 msgstr "Spray"
 
-#: apps/medications/models.py:33
 msgid "Other"
 msgstr "Outro"
 
-#: apps/medications/models.py:42
 msgid "active ingredient"
 msgstr "princípio ativo"
 
-#: apps/medications/models.py:45
 msgid "strength"
 msgstr "concentração"
 
-#: apps/medications/models.py:52
 msgid "strength unit"
 msgstr "unidade da concentração"
 
-#: apps/medications/models.py:58
 msgid "form"
 msgstr "forma"
 
-#: apps/medications/models.py:62
 msgid "medication"
 msgstr "medicamento"
 
-#: apps/medications/models.py:63
 msgid "medications"
 msgstr "medicamentos"
 
-#: apps/medications/panels.py:21
 msgid "Add medication details"
 msgstr "Adicionar dados de medicamento"
 
-#: apps/medications/views.py:40
 msgid "Medication created."
 msgstr "Medicamento criado."
 
-#: apps/medications/views.py:44 templates/medications/list.html:7
 msgid "New medication"
 msgstr "Novo medicamento"
 
-#: apps/medications/views.py:63
 msgid "Medication details saved."
 msgstr "Dados do medicamento salvos."
 
-#: templates/ammunition/list.html:8 templates/ammunition/usage_list.html:3
-#: templates/ammunition/usage_list.html:7
 msgid "Usage history"
 msgstr "Histórico de uso"
 
-#: templates/ammunition/list.html:19
 msgid "rounds on hand"
 msgstr "cartuchos em estoque"
 
-#: templates/ammunition/list.html:26
 msgid "Search name, caliber or manufacturer…"
 msgstr "Buscar nome, calibre ou fabricante…"
 
-#: templates/ammunition/list.html:28
 msgid "All calibers"
 msgstr "Todos os calibres"
 
-#: templates/ammunition/list.html:31 templates/inventory/item_list.html:23
-#: templates/medications/list.html:11
 msgid "Search"
 msgstr "Buscar"
 
-#: templates/ammunition/list.html:39
-#: templates/ammunition/partials/item_panel.html:11
 msgid "Caliber"
 msgstr "Calibre"
 
-#: templates/ammunition/list.html:40
-#: templates/ammunition/partials/item_panel.html:12
 msgid "Bullet weight"
 msgstr "Peso do projétil"
 
-#: templates/ammunition/list.html:41
-#: templates/ammunition/partials/item_panel.html:14
 msgid "Manufacturer"
 msgstr "Fabricante"
 
-#: templates/ammunition/list.html:57
-#: templates/inventory/partials/item_results.html:23
 msgid "Low"
 msgstr "Baixo"
 
-#: templates/ammunition/list.html:61
 msgid "No ammunition yet."
 msgstr "Nenhuma munição ainda."
 
-#: templates/ammunition/partials/item_panel.html:6
-#: templates/inventory/item_detail.html:22
-#: templates/inventory/simple_list.html:28 templates/kits/detail.html:12
-#: templates/medications/partials/item_panel.html:5
 msgid "Edit"
 msgstr "Editar"
 
-#: templates/ammunition/partials/item_panel.html:13
 msgid "Bullet type"
 msgstr "Tipo de projétil"
 
-#: templates/ammunition/partials/item_panel.html:19
 msgid "Recent usage"
 msgstr "Uso recente"
 
-#: templates/ammunition/partials/item_panel.html:20
-#: templates/kits/partials/dashboard_summary.html:8
 msgid "See all"
 msgstr "Ver tudo"
 
-#: templates/ammunition/usage_list.html:10
 msgid "Search name or caliber…"
 msgstr "Buscar nome ou calibre…"
 
-#: templates/ammunition/usage_list.html:12
 msgid "All reasons"
 msgstr "Todos os motivos"
 
-#: templates/ammunition/usage_list.html:15
-#: templates/inventory/movement_list.html:12
 msgid "Filter"
 msgstr "Filtrar"
 
-#: templates/ammunition/usage_list.html:17
+#, python-format
 msgid "Total in this filter: %(total)s rounds"
 msgstr "Total neste filtro: %(total)s cartuchos"
 
-#: templates/ammunition/usage_list.html:27
 msgid "User"
 msgstr "Usuário"
 
-#: templates/ammunition/usage_list.html:47
 msgid "No usage recorded yet."
 msgstr "Nenhum uso registrado ainda."
 
-#: templates/autonomy/index.html:3 templates/autonomy/index.html:6
-#: templates/partials/nav_links.html:8
 msgid "Autonomy"
 msgstr "Autonomia"
 
-#: templates/autonomy/index.html:7
-msgid "How long your stock lasts for the household. Expired batches are not counted."
-msgstr "Quanto tempo seu estoque dura para a residência. Lotes vencidos não são contados."
+msgid ""
+"How long your stock lasts for the household. Expired batches are not counted."
+msgstr ""
+"Quanto tempo seu estoque dura para a residência. Lotes vencidos não são "
+"contados."
 
-#: templates/autonomy/index.html:12
+#, python-format
+msgid ""
+"Simulation: %(people)s people, %(kcal)s kcal and %(water)s L per person per "
+"day. Nothing was saved."
+msgstr ""
+"Simulação: %(people)s pessoas, %(kcal)s kcal e %(water)s L por pessoa por "
+"dia. Nada foi salvo."
+
+msgid "Back to the saved household"
+msgstr "Voltar à casa salva"
+
 msgid "Overall autonomy"
 msgstr "Autonomia geral"
 
-#: templates/autonomy/index.html:13 templates/autonomy/index.html:18
-#: templates/autonomy/index.html:23
 msgid "days"
 msgstr "dias"
 
-#: templates/autonomy/index.html:14
 msgid "The lower of food and water"
 msgstr "O menor entre comida e água"
 
-#: templates/autonomy/index.html:17
-msgid "Food"
-msgstr "Comida"
+msgid ""
+"To count an item, edit it and fill in its calories per unit (food) or mark "
+"it as drinking water."
+msgstr ""
+"Para contar um item, edite-o e preencha as calorias por unidade (comida) ou "
+"marque-o como água potável."
 
-#: templates/autonomy/index.html:22
-msgid "Water"
-msgstr "Água"
-
-#: templates/autonomy/index.html:30
-msgid "To count an item, edit it and fill in its calories per unit (food) or mark it as drinking water."
-msgstr "Para contar um item, edite-o e preencha as calorias por unidade (comida) ou marque-o como água potável."
-
-#: templates/autonomy/index.html:36
 msgid "Food, by calories"
 msgstr "Comida, por calorias"
 
-#: templates/autonomy/index.html:47
 msgid "No food counted yet."
 msgstr "Nenhum alimento contado ainda."
 
-#: templates/autonomy/index.html:49 templates/autonomy/index.html:66
+#, python-format
 msgid "%(count)s item(s) have expired stock that was left out."
 msgstr "%(count)s item(ns) com estoque vencido que ficou de fora."
 
-#: templates/autonomy/index.html:53
 msgid "Drinking water"
 msgstr "Água potável"
 
-#: templates/autonomy/index.html:64
 msgid "No water counted yet."
 msgstr "Nenhuma água contada ainda."
 
-#: templates/autonomy/index.html:72
+msgid "What if…"
+msgstr "E se…"
+
+msgid ""
+"Try other numbers to see how long the stock would last. Nothing is saved."
+msgstr ""
+"Teste outros números para ver quanto tempo o estoque duraria. Nada é salvo."
+
+msgid "Simulate"
+msgstr "Simular"
+
 msgid "Household"
 msgstr "Residência"
 
-#: templates/autonomy/index.html:76 templates/inventory/form.html:12
-#: templates/inventory/partials/stock_panel.html:115
-#: templates/spec_form.html:17
 msgid "Save"
 msgstr "Salvar"
 
-#: templates/base.html:36
+#, python-format
+msgid "Days of supplies for the household. A full ring is %(goal_days)s days."
+msgstr ""
+"Dias de suprimentos para a casa. O anel cheio equivale a %(goal_days)s dias."
+
+msgid "Details"
+msgstr "Detalhes"
+
+msgid "Preparedness inventory"
+msgstr "Inventário de preparo"
+
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: templates/base.html:41
-msgid "Admin"
-msgstr "Admin"
+msgid "Needs attention"
+msgstr "Precisa de atenção"
 
-#: templates/base.html:43 templates/core/settings.html:3
-#: templates/core/settings.html:7
-msgid "Settings"
-msgstr "Configurações"
+msgid "Expiring, low or incomplete"
+msgstr "Vencendo, acabando ou incompleto"
 
-#: templates/base.html:47
-msgid "Log out"
-msgstr "Sair"
-
-#: templates/base.html:55
-msgid "Open menu"
-msgstr "Abrir menu"
-
-#: templates/core/login.html:3 templates/core/login.html:36
-msgid "Log in"
-msgstr "Entrar"
-
-#: templates/core/login.html:7
-msgid "Toggle theme"
-msgstr "Alternar tema"
-
-#: templates/core/login.html:21
-msgid "Sign in to see your inventory."
-msgstr "Entre para ver seu estoque."
-
-#: templates/core/notifications.html:3 templates/core/notifications.html:6
-#: templates/partials/nav_links.html:3
-msgid "Notifications"
-msgstr "Notificações"
-
-#: templates/core/notifications.html:7
-msgid "They clear by themselves once the cause is fixed."
-msgstr "Elas somem sozinhas quando a causa é resolvida."
-
-#: templates/core/notifications.html:28
 msgid "All good"
 msgstr "Tudo em ordem"
 
-#: templates/core/notifications.html:29
-msgid "Nothing is expiring, running low or incomplete."
-msgstr "Nada vencendo, acabando ou incompleto."
+msgid "Nothing needs attention."
+msgstr "Nada precisa de atenção."
 
-#: templates/core/settings.html:13
-msgid "Appearance and language"
-msgstr "Aparência e idioma"
+msgid "Settings"
+msgstr "Configurações"
 
-#: templates/core/settings.html:20
-msgid "Save preferences"
-msgstr "Salvar preferências"
+msgid "Read-only"
+msgstr "Somente leitura"
 
-#: templates/core/settings.html:26
-msgid "Change password"
-msgstr "Alterar senha"
+msgid "Administrator"
+msgstr "Administrador"
 
-#: templates/core/settings.html:29
-msgid "Update password"
-msgstr "Atualizar senha"
+msgid "Admin"
+msgstr "Admin"
 
-#: templates/core/settings.html:36
-msgid "Backup"
-msgstr "Backup"
+msgid "Log out"
+msgstr "Sair"
 
-#: templates/core/settings.html:37
-msgid "Export all data into one encrypted file, or restore it here or on another machine."
-msgstr "Exporte todos os dados em um arquivo criptografado, ou restaure aqui ou em outra máquina."
+msgid "Open menu"
+msgstr "Abrir menu"
 
-#: templates/core/settings.html:42
-msgid "Export"
-msgstr "Exportar"
-
-#: templates/core/settings.html:44
-msgid "Download encrypted backup"
-msgstr "Baixar backup criptografado"
-
-#: templates/core/settings.html:49
-msgid "Restore"
-msgstr "Restaurar"
-
-#: templates/core/settings.html:50
-msgid "Restoring replaces every item, batch, kit and user with the ones in the file, and signs everyone out. Export a backup first."
-msgstr "Restaurar substitui todos os itens, lotes, kits e usuários pelos do arquivo e desconecta todo mundo. Exporte um backup antes."
-
-#: templates/core/settings.html:52
-msgid "Restore backup"
-msgstr "Restaurar backup"
-
-#: templates/error.html:3
-msgid "Error"
-msgstr "Erro"
-
-#: templates/error.html:6
-msgid "Could not complete the action"
-msgstr "Não foi possível concluir a ação"
-
-#: templates/error.html:8
-msgid "Go back"
-msgstr "Voltar"
-
-#: templates/inventory/dashboard.html:3 templates/inventory/dashboard.html:6
-#: templates/partials/nav_links.html:2
-msgid "Dashboard"
-msgstr "Painel"
-
-#: templates/inventory/dashboard.html:7
-msgid "l, F j, Y"
-msgstr "l, j \\d\\e F \\d\\e Y"
-
-#: templates/inventory/dashboard.html:16 templates/inventory/dashboard.html:98
-msgid "Batches in stock"
-msgstr "Lotes em estoque"
-
-#: templates/inventory/dashboard.html:20
-msgid "Expiring soon"
-msgstr "Vencendo em breve"
-
-#: templates/inventory/dashboard.html:24
-msgid "Below minimum"
-msgstr "Abaixo do mínimo"
-
-#: templates/inventory/dashboard.html:32
-msgid "Expiring within %(warning_days)s days"
-msgstr "Vencendo em até %(warning_days)s dias"
-
-#: templates/inventory/dashboard.html:45
-#: templates/inventory/partials/stock_panel.html:77
-#: templates/kits/detail.html:58
-msgid "Expired"
-msgstr "Vencido"
-
-#: templates/inventory/dashboard.html:53
-msgid "Showing %(shown)s of %(expiring_count)s."
-msgstr "Mostrando %(shown)s de %(expiring_count)s."
-
-#: templates/inventory/dashboard.html:56
-msgid "Nothing expiring soon."
-msgstr "Nada vencendo em breve."
-
-#: templates/inventory/dashboard.html:62
-msgid "Below minimum stock"
-msgstr "Abaixo do estoque mínimo"
-
-#: templates/inventory/dashboard.html:79
-msgid "Showing %(shown)s of %(low_stock_count)s."
-msgstr "Mostrando %(shown)s de %(low_stock_count)s."
-
-#: templates/inventory/dashboard.html:82
-msgid "All items are above their minimum."
-msgstr "Todos os itens estão acima do mínimo."
-
-#: templates/inventory/dashboard.html:109
-msgid "No categories yet."
-msgstr "Nenhuma categoria ainda."
-
-#: templates/inventory/form.html:11
-#: templates/inventory/partials/stock_panel.html:98
-#: templates/inventory/partials/stock_panel.html:114
-#: templates/spec_form.html:16
-msgid "Cancel"
-msgstr "Cancelar"
-
-#: templates/inventory/item_detail.html:14
-msgid "Item type"
-msgstr "Tipo do item"
-
-#: templates/inventory/item_detail.html:23
-#: templates/inventory/simple_list.html:29 templates/kits/detail.html:13
-msgid "Delete this record?"
-msgstr "Excluir este registro?"
-
-#: templates/inventory/item_detail.html:25
-#: templates/inventory/simple_list.html:31 templates/kits/detail.html:15
-msgid "Delete"
-msgstr "Excluir"
-
-#: templates/inventory/item_list.html:8
-msgid "Export CSV"
-msgstr "Exportar CSV"
-
-#: templates/inventory/item_list.html:16
-#: templates/inventory/movement_list.html:7
 msgid "Search items…"
 msgstr "Buscar itens…"
 
-#: templates/inventory/item_list.html:18
-msgid "All categories"
-msgstr "Todas as categorias"
+msgid "Quick add"
+msgstr "Adicionar rápido"
 
-#: templates/inventory/movement_list.html:3
-#: templates/inventory/movement_list.html:5 templates/partials/nav_links.html:9
+msgid "Import CSV"
+msgstr "Importar CSV"
+
+msgid "Notifications"
+msgstr "Notificações"
+
+msgid ""
+"Read-only account: you can look at everything but cannot change anything."
+msgstr "Conta somente leitura: você pode ver tudo, mas não pode alterar nada."
+
+msgid "Log in"
+msgstr "Entrar"
+
+msgid "Toggle theme"
+msgstr "Alternar tema"
+
+msgid "Verified Assets, Usage, Lots and Tracking"
+msgstr "Bens verificados, uso, lotes e rastreamento"
+
+msgid "Sign in to see your inventory."
+msgstr "Entre para ver seu estoque."
+
+msgid "They clear by themselves once the cause is fixed."
+msgstr "Elas somem sozinhas quando a causa é resolvida."
+
+msgid "Nothing is expiring, running low or incomplete."
+msgstr "Nada vencendo, acabando ou incompleto."
+
+msgid "Appearance and language"
+msgstr "Aparência e idioma"
+
+msgid "Save preferences"
+msgstr "Salvar preferências"
+
+msgid "Change password"
+msgstr "Alterar senha"
+
+msgid "Update password"
+msgstr "Atualizar senha"
+
+msgid "Backup"
+msgstr "Backup"
+
+msgid ""
+"Export all data into one encrypted file, or restore it here or on another "
+"machine."
+msgstr ""
+"Exporte todos os dados em um arquivo criptografado, ou restaure aqui ou em "
+"outra máquina."
+
+msgid "Export"
+msgstr "Exportar"
+
+msgid "Download encrypted backup"
+msgstr "Baixar backup criptografado"
+
+msgid "Restore"
+msgstr "Restaurar"
+
+msgid ""
+"Restoring replaces every item, batch, kit and user with the ones in the "
+"file, and signs everyone out. Export a backup first."
+msgstr ""
+"Restaurar substitui todos os itens, lotes, kits e usuários pelos do arquivo "
+"e desconecta todo mundo. Exporte um backup antes."
+
+msgid "Restore backup"
+msgstr "Restaurar backup"
+
+msgid "First-time setup"
+msgstr "Primeiro acesso"
+
+msgid "Welcome to V.A.U.L.T"
+msgstr "Bem-vindo ao V.A.U.L.T"
+
+msgid "There are no users yet. Create the administrator account."
+msgstr "Ainda não há usuários. Crie a conta de administrador."
+
+msgid "Create account"
+msgstr "Criar conta"
+
+msgid "Error"
+msgstr "Erro"
+
+msgid "Could not complete the action"
+msgstr "Não foi possível concluir a ação"
+
+msgid "Go back"
+msgstr "Voltar"
+
+msgid "Dashboard"
+msgstr "Painel"
+
+#, python-format
+msgid "%(n)s batch expires within %(warning_days)s days"
+msgid_plural "%(n)s batches expire within %(warning_days)s days"
+msgstr[0] "%(n)s lote vence em até %(warning_days)s dias"
+msgstr[1] "%(n)s lotes vencem em até %(warning_days)s dias"
+
+#, python-format
+msgid "%(n)s item is below its minimum."
+msgid_plural "%(n)s items are below their minimum."
+msgstr[0] "%(n)s item está abaixo do mínimo."
+msgstr[1] "%(n)s itens estão abaixo do mínimo."
+
+msgid "Everything is in order."
+msgstr "Tudo em ordem."
+
+msgid "l, F j, Y"
+msgstr "l, j \\d\\e F \\d\\e Y"
+
+msgid "Shopping list"
+msgstr "Lista de compras"
+
+msgid "Insights"
+msgstr "Análises"
+
+msgid "Batches in stock"
+msgstr "Lotes em estoque"
+
+msgid "Expiring soon"
+msgstr "Vencendo em breve"
+
+msgid "Below minimum"
+msgstr "Abaixo do mínimo"
+
+#, python-format
+msgid "Expiring within %(warning_days)s days"
+msgstr "Vencendo em até %(warning_days)s dias"
+
+msgid "Expired"
+msgstr "Vencido"
+
+#, python-format
+msgid "Showing %(shown)s of %(expiring_count)s."
+msgstr "Mostrando %(shown)s de %(expiring_count)s."
+
+msgid "Nothing expiring soon."
+msgstr "Nada vencendo em breve."
+
+msgid "Below minimum stock"
+msgstr "Abaixo do estoque mínimo"
+
+#, python-format
+msgid "Showing %(shown)s of %(low_stock_count)s."
+msgstr "Mostrando %(shown)s de %(low_stock_count)s."
+
+msgid "All items are above their minimum."
+msgstr "Todos os itens estão acima do mínimo."
+
+msgid "By category"
+msgstr "Por categoria"
+
+msgid "Items per category and batches holding stock."
+msgstr "Itens por categoria e lotes com estoque."
+
+#, python-format
+msgid "%(n)s item"
+msgid_plural "%(n)s items"
+msgstr[0] "%(n)s item"
+msgstr[1] "%(n)s itens"
+
+#, python-format
+msgid "%(n)s batch"
+msgid_plural "%(n)s batches"
+msgstr[0] "%(n)s lote"
+msgstr[1] "%(n)s lotes"
+
+msgid "No categories yet."
+msgstr "Nenhuma categoria ainda."
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "What your stock does over time, worked out from the movement history."
+msgstr ""
+"O que seu estoque faz ao longo do tempo, calculado a partir do histórico de "
+"movimentações."
+
+msgid "Forecast"
+msgstr "Previsão"
+
+msgid "Value"
+msgstr "Valor"
+
+msgid "Activity"
+msgstr "Atividade"
+
+msgid "How long each item lasts"
+msgstr "Quanto tempo dura cada item"
+
+#, python-format
+msgid ""
+"At the pace of the last %(window_days)s days (or since the item first moved, "
+"when that is shorter). Items nobody has used are not listed."
+msgstr ""
+"No ritmo dos últimos %(window_days)s dias (ou desde a primeira movimentação "
+"do item, se for menos). Itens que ninguém usou não aparecem."
+
+msgid "In stock"
+msgstr "Em estoque"
+
+msgid "Use per day"
+msgstr "Uso por dia"
+
+msgid "Lasts"
+msgstr "Dura"
+
+msgid "Out of stock"
+msgstr "Sem estoque"
+
+msgid "No exits recorded yet, so there is no pace to project."
+msgstr "Ainda não há saídas registradas, então não há ritmo para projetar."
+
+msgid "Stock value"
+msgstr "Valor do estoque"
+
+msgid "What the batches with a price cost."
+msgstr "Quanto custaram os lotes que têm preço."
+
+msgid "Categories priced"
+msgstr "Categorias com preço"
+
+msgid "Batches without a price"
+msgstr "Lotes sem preço"
+
+msgid "Fill in the unit cost on the next entry to count them."
+msgstr "Informe o custo unitário na próxima entrada para contá-los."
+
+msgid "Value by category"
+msgstr "Valor por categoria"
+
+msgid "No prices yet. Add the unit cost when you register an entry."
+msgstr ""
+"Ainda não há preços. Informe o custo unitário ao registrar uma entrada."
+
 msgid "Movements"
 msgstr "Movimentações"
 
-#: templates/inventory/movement_list.html:9
+#, python-format
+msgid "Last %(recent_days)s days"
+msgstr "Últimos %(recent_days)s dias"
+
+msgid "total"
+msgstr "total"
+
+msgid "No movements in this period."
+msgstr "Nenhuma movimentação neste período."
+
+msgid "Who recorded"
+msgstr "Quem registrou"
+
+msgid "Most used items"
+msgstr "Itens mais usados"
+
+#, python-format
+msgid "By exits, last %(recent_days)s days"
+msgstr "Por saídas, últimos %(recent_days)s dias"
+
+msgid "No exits in this period."
+msgstr "Nenhuma saída neste período."
+
+msgid "Activity by day"
+msgstr "Atividade por dia"
+
+#, python-format
+msgid "%(total)s movements in the last 12 weeks. Darker days were busier."
+msgstr ""
+"%(total)s movimentações nas últimas 12 semanas. Dias mais escuros foram mais "
+"movimentados."
+
+#, python-format
+msgid "Busiest day: %(day)s (%(count)s)"
+msgstr "Dia mais movimentado: %(day)s (%(count)s)"
+
+msgid "Item type"
+msgstr "Tipo do item"
+
+msgid "Delete this record?"
+msgstr "Excluir este registro?"
+
+msgid "Delete"
+msgstr "Excluir"
+
+msgid "Export CSV"
+msgstr "Exportar CSV"
+
+msgid "All categories"
+msgstr "Todas as categorias"
+
 msgid "All kinds"
 msgstr "Todos os tipos"
 
-#: templates/inventory/movement_list.html:22
-#: templates/inventory/partials/stock_panel.html:138
 msgid "No movements yet."
 msgstr "Nenhuma movimentação ainda."
 
-#: templates/inventory/partials/item_results.html:7
-#: templates/medications/list.html:20
 msgid "Stock"
 msgstr "Estoque"
 
-#: templates/inventory/partials/item_results.html:8
 msgid "Minimum"
 msgstr "Mínimo"
 
-#: templates/inventory/partials/item_results.html:9
-#: templates/medications/list.html:21
 msgid "Next expiry"
 msgstr "Próx. validade"
 
-#: templates/inventory/partials/item_results.html:24
-#: templates/kits/detail.html:59
 msgid "Expiring"
 msgstr "Vencendo"
 
-#: templates/inventory/partials/item_results.html:29
 msgid "No items found."
 msgstr "Nenhum item encontrado."
 
-#: templates/inventory/partials/movement_row.html:9
+#, python-format
 msgid "by %(user)s"
 msgstr "por %(user)s"
 
-#: templates/inventory/partials/stock_panel.html:7
 msgid "Total stock"
 msgstr "Estoque total"
 
-#: templates/inventory/partials/stock_panel.html:11
 msgid "Minimum stock"
 msgstr "Estoque mínimo"
 
-#: templates/inventory/partials/stock_panel.html:15
 msgid "Use first (FEFO)"
 msgstr "Usar primeiro (FEFO)"
 
-#: templates/inventory/partials/stock_panel.html:18
 msgid "No expiry date"
 msgstr "Sem validade"
 
-#: templates/inventory/partials/stock_panel.html:18
-#: templates/inventory/partials/stock_panel.html:65
 msgid "Packaged"
 msgstr "Envasado"
 
-#: templates/inventory/partials/stock_panel.html:29
 msgid "Add stock"
 msgstr "Adicionar estoque"
 
-#: templates/inventory/partials/stock_panel.html:31
 msgid "Register entry"
 msgstr "Registrar entrada"
 
-#: templates/inventory/partials/stock_panel.html:37
 msgid "Remove stock"
 msgstr "Retirar estoque"
 
-#: templates/inventory/partials/stock_panel.html:38
-msgid "Leave it on automatic to take the batch that expires first, then the oldest packaged. Or choose where to take from."
-msgstr "Deixe em automático para retirar o lote que vence primeiro e, em caso de empate, o envasado há mais tempo. Ou escolha de onde retirar."
+msgid ""
+"Leave it on automatic to take the batch that expires first, then the oldest "
+"packaged. Or choose where to take from."
+msgstr ""
+"Deixe em automático para retirar o lote que vence primeiro e, em caso de "
+"empate, o envasado há mais tempo. Ou escolha de onde retirar."
 
-#: templates/inventory/partials/stock_panel.html:40
 msgid "Register exit"
 msgstr "Registrar saída"
 
-#: templates/inventory/partials/stock_panel.html:52
 msgid "Packaged / made"
 msgstr "Envasamento / fabricação"
 
-#: templates/inventory/partials/stock_panel.html:66
-#: templates/inventory/partials/stock_panel.html:70
+msgid "Automatic exits skip kits. Choose this location to take from it."
+msgstr "Saídas automáticas ignoram kits. Escolha este local para retirar dele."
+
+msgid "In a kit"
+msgstr "Em um kit"
+
+#, python-format
 msgid "%(age)s ago"
 msgstr "há %(age)s"
 
-#: templates/inventory/partials/stock_panel.html:69
 msgid "Made"
 msgstr "Fabricado"
 
-#: templates/inventory/partials/stock_panel.html:84
-#: templates/inventory/partials/stock_panel.html:99
 msgid "Transfer"
 msgstr "Transferir"
 
-#: templates/inventory/partials/stock_panel.html:85
 msgid "Adjust"
 msgstr "Ajustar"
 
-#: templates/inventory/partials/stock_panel.html:93
 msgid "Transfer stock"
 msgstr "Transferir estoque"
 
-#: templates/inventory/partials/stock_panel.html:109
 msgid "Adjust batch"
 msgstr "Ajustar lote"
 
-#: templates/inventory/partials/stock_panel.html:125
 msgid "No stock on hand."
 msgstr "Sem estoque."
 
-#: templates/inventory/partials/stock_panel.html:130
 msgid "Recent movements"
 msgstr "Movimentações recentes"
 
-#: templates/inventory/simple_list.html:7
+msgid "Everything below its minimum stock, with the amount to buy."
+msgstr "Tudo o que está abaixo do estoque mínimo, com a quantidade a comprar."
+
+msgid "Print"
+msgstr "Imprimir"
+
+msgid "Have"
+msgstr "Tenho"
+
+msgid "Buy"
+msgstr "Comprar"
+
+msgid "Estimate"
+msgstr "Estimativa"
+
+msgid "Estimated total"
+msgstr "Total estimado"
+
+#, python-format
+msgid "%(n)s item without a known price"
+msgid_plural "%(n)s items without a known price"
+msgstr[0] "%(n)s item sem preço conhecido"
+msgstr[1] "%(n)s itens sem preço conhecido"
+
+msgid "Nothing to buy: every item is at or above its minimum."
+msgstr "Nada para comprar: todos os itens estão no mínimo ou acima."
+
 msgid "New"
 msgstr "Novo"
 
-#: templates/inventory/simple_list.html:13
 msgid "Name"
 msgstr "Nome"
 
-#: templates/inventory/simple_list.html:37
 msgid "Nothing here yet."
 msgstr "Nada por aqui ainda."
 
-#: templates/kits/detail.html:22
+msgid "Stock count"
+msgstr "Contagem de estoque"
+
+msgid ""
+"Count what is on the shelf and type it in. Only the batches that differ are "
+"adjusted, and each one is recorded in the movement history."
+msgstr ""
+"Conte o que está na prateleira e digite aqui. Só os lotes que diferem são "
+"ajustados, e cada um fica registrado no histórico de movimentações."
+
+msgid "Show batches"
+msgstr "Mostrar lotes"
+
+msgid "In the system"
+msgstr "No sistema"
+
+msgid "Counted"
+msgstr "Contado"
+
+msgid "Apply count"
+msgstr "Aplicar contagem"
+
+msgid "Leave a field empty to keep that batch as it is."
+msgstr "Deixe o campo vazio para manter o lote como está."
+
+msgid "No stock at this location."
+msgstr "Nenhum estoque neste local."
+
+msgid "Choose a location to count."
+msgstr "Escolha um local para contar."
+
+msgid ""
+"Load many entries at once, for example your first inventory. Each row is one "
+"entry of stock."
+msgstr ""
+"Carregue muitas entradas de uma vez, por exemplo seu primeiro inventário. "
+"Cada linha é uma entrada de estoque."
+
+msgid "Download template"
+msgstr "Baixar modelo"
+
+msgid "Import"
+msgstr "Importar"
+
+msgid "File format"
+msgstr "Formato do arquivo"
+
+msgid ""
+"The first line holds the column names. Commas or semicolons both work. Dates "
+"look like 2027-06-30 or 30/06/2027."
+msgstr ""
+"A primeira linha traz os nomes das colunas. Vírgulas ou ponto e vírgula "
+"funcionam. As datas são como 2027-06-30 ou 30/06/2027."
+
+msgid "required. Missing items, categories and locations are created."
+msgstr "obrigatórias. Itens, categorias e locais que não existem são criados."
+
+msgid "the unit code, such as un, kg, l, ml, box or tablet. Empty means unit."
+msgstr ""
+"o código da unidade, como un, kg, l, ml, box ou tablet. Vazio significa "
+"unidade."
+
+msgid "optional."
+msgstr "opcionais."
+
+msgid ""
+"Everything is checked first. If any row has a problem, nothing is imported."
+msgstr ""
+"Tudo é verificado antes. Se alguma linha tiver problema, nada é importado."
+
 msgid "Status"
 msgstr "Situação"
 
-#: templates/kits/detail.html:23 templates/kits/list.html:18
-#: templates/kits/partials/dashboard_summary.html:16
 msgid "Ready"
 msgstr "Pronto"
 
-#: templates/kits/detail.html:23 templates/kits/list.html:19
-#: templates/kits/partials/dashboard_summary.html:17
 msgid "Incomplete"
 msgstr "Incompleto"
 
-#: templates/kits/detail.html:23 templates/kits/list.html:20
-#: templates/kits/partials/dashboard_summary.html:18
 msgid "Empty list"
 msgstr "Lista vazia"
 
-#: templates/kits/detail.html:26
 msgid "Complete items"
 msgstr "Itens completos"
 
-#: templates/kits/detail.html:30
 msgid "Progress"
 msgstr "Progresso"
 
-#: templates/kits/detail.html:36
 msgid "Checklist"
 msgstr "Checklist"
 
-#: templates/kits/detail.html:42
 msgid "In the kit"
 msgstr "No kit"
 
-#: templates/kits/detail.html:43
 msgid "Required"
 msgstr "Necessário"
 
-#: templates/kits/detail.html:56
 msgid "OK"
 msgstr "OK"
 
-#: templates/kits/detail.html:57
+#, python-format
 msgid "Missing %(missing)s"
 msgstr "Faltam %(missing)s"
 
-#: templates/kits/detail.html:65
 msgid "Remove"
 msgstr "Remover"
 
-#: templates/kits/detail.html:73
 msgid "The list is empty. Add what this kit should hold."
 msgstr "A lista está vazia. Adicione o que este kit deve conter."
 
-#: templates/kits/detail.html:79
 msgid "Add to the list"
 msgstr "Adicionar à lista"
 
-#: templates/kits/detail.html:80
 msgid "Adding an item that is already listed updates its required quantity."
-msgstr "Adicionar um item que já está na lista atualiza a quantidade necessária."
+msgstr ""
+"Adicionar um item que já está na lista atualiza a quantidade necessária."
 
-#: templates/kits/detail.html:82
 msgid "Save item"
 msgstr "Salvar item"
 
-#: templates/kits/list.html:25
-#: templates/kits/partials/dashboard_summary.html:24
+#, python-format
 msgid "%(done)s of %(total)s items complete"
 msgstr "%(done)s de %(total)s itens completos"
 
-#: templates/kits/list.html:26
-#: templates/kits/partials/dashboard_summary.html:25
 msgid "Has expired or expiring items"
 msgstr "Tem itens vencidos ou prestes a vencer"
 
-#: templates/kits/list.html:31
 msgid "No kits yet."
 msgstr "Nenhum kit ainda."
 
-#: templates/kits/partials/dashboard_summary.html:6
+#, python-format
 msgid "%(ready_count)s of %(total)s kits ready"
 msgstr "%(ready_count)s de %(total)s kits prontos"
 
-#: templates/kits/partials/dashboard_summary.html:32
+#, python-format
 msgid "and %(count)s more"
 msgstr "e mais %(count)s"
 
-#: templates/medications/list.html:3 templates/medications/list.html:6
-#: templates/partials/nav_links.html:5
 msgid "Medications"
 msgstr "Medicamentos"
 
-#: templates/medications/list.html:10
 msgid "Search name or active ingredient…"
 msgstr "Buscar nome ou princípio ativo…"
 
-#: templates/medications/list.html:18
-#: templates/medications/partials/item_panel.html:8
 msgid "Active ingredient"
 msgstr "Princípio ativo"
 
-#: templates/medications/list.html:19
-#: templates/medications/partials/item_panel.html:10
 msgid "Form"
 msgstr "Forma"
 
-#: templates/medications/list.html:37
 msgid "No medications yet."
 msgstr "Nenhum medicamento ainda."
 
-#: templates/medications/partials/item_panel.html:9
 msgid "Strength"
 msgstr "Concentração"
 
-#: templates/partials/pagination.html:3
+msgid "Overview"
+msgstr "Visão geral"
+
+msgid "Manage"
+msgstr "Gerenciar"
+
 msgid "Pagination"
 msgstr "Paginação"
 
-#: templates/partials/pagination.html:4
+#, python-format
 msgid "Page %(number)s of %(total)s"
 msgstr "Página %(number)s de %(total)s"
 
-#: templates/partials/pagination.html:6
 msgid "Previous"
 msgstr "Anterior"
 
-#: templates/partials/pagination.html:7
 msgid "Next"
 msgstr "Próxima"
