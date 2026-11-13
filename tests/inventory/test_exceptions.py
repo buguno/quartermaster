@@ -22,7 +22,7 @@ from apps.inventory.exceptions import (
     ],
 )
 def test_inventory_errors_map_to_http_status(error, status):
-    response = DomainErrorMiddleware.process_exception(
+    response = DomainErrorMiddleware.respond(
         RequestFactory().post('/'), error('boom')
     )
 
