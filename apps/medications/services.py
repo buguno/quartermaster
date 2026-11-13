@@ -6,7 +6,7 @@ from apps.inventory.models import Item
 from apps.medications.models import Medication
 
 
-def list_medications(*, query: str = '') -> models.QuerySet[Item]:
+def list_medications(query: str = '') -> models.QuerySet[Item]:
     """Medication items with stock and nearest expiry, by name."""
     items = inventory.items_with_stock().filter(medication__isnull=False)
     if query:
