@@ -35,7 +35,7 @@ to the internet.** If remote access is needed, use a VPN (e.g. WireGuard).
 | Task runner        | poethepoet as a Poetry plugin (`poetry <task>`)                |
 | Lint + format      | Ruff                                                           |
 | Tests              | pytest, pytest-django, pytest-cov, pytest-random-order         |
-| Test data          | factory-boy, freezegun                                         |
+| Test data          | factory-boy, Faker (dev only), freezegun                       |
 | Test database      | Testcontainers (real PostgreSQL)                               |
 
 Tooling (Ruff, poe, pytest setup, EditorConfig, Dependabot, CI, commit
@@ -239,6 +239,8 @@ requirements (`poetry-plugin-export`) and install with pip.
 - Layout: `tests/<app>/test_services.py` for business rules, `tests/<app>/test_views.py` for HTTP behavior.
 - Tests run in random order (`--random-order`) and with `--cov-context=test`.
 - Use `factory.Factory` with `Sequence` for unique fields (no random collisions); persistence is the fixture's job.
+- Never write passwords or passphrases in tests (secret scanners flag them): `tests/fakes.py` generates them with Faker
+  (`PASSWORD`, `NEW_PASSWORD`, `PASSPHRASE`), and the `user` fixture gets a fake username.
 - Use freezegun for anything involving expiry dates and alert windows.
 - Coverage target is 100% (statements + branches), like the template. If that becomes
   impractical for a specific module, ask before lowering it.
