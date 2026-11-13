@@ -314,7 +314,7 @@ Everything is on the Settings page. Backups are made **on demand**, not on a sch
 | Dependency manager | Poetry 2.x (`package-mode = false`) |
 | Task runner | poethepoet as a Poetry plugin (`poetry <task>`) |
 | Lint and format | Ruff |
-| Tests | pytest, pytest-django, pytest-cov, pytest-random-order, factory-boy, freezegun, Testcontainers |
+| Tests | pytest, pytest-django, pytest-cov, pytest-random-order, factory-boy, Faker, freezegun, Testcontainers |
 | Typing (dev only) | `django-stubs`, so Pylance/pyright understand models, querysets and forms (pick the Poetry interpreter in your editor) |
 | Backup encryption | GnuPG (external program) |
 
