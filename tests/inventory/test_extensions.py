@@ -1,6 +1,8 @@
+from django.test import RequestFactory
 from django.urls import reverse
 
 from apps.inventory import extensions
+from apps.medications.models import Medication
 
 
 def test_plain_items_offer_every_extension(auth_client, item):
@@ -16,8 +18,6 @@ def test_plain_items_offer_every_extension(auth_client, item):
 
 
 def test_panels_hide_the_attach_links(auth_client, item):
-    from apps.medications.models import Medication  # noqa: PLC0415
-
     Medication.objects.create(item=item, active_ingredient='dipyrone')
 
     url = reverse('inventory:item_detail', args=[item.pk])
@@ -28,8 +28,6 @@ def test_panels_hide_the_attach_links(auth_client, item):
 
 
 def test_dashboard_widgets_skip_empty_results(monkeypatch):
-    from django.test import RequestFactory  # noqa: PLC0415
-
     monkeypatch.setattr(
         extensions,
         'DASHBOARD_WIDGETS',
@@ -52,10 +50,16 @@ def test_register_dashboard_widget(monkeypatch):
     assert extensions.DASHBOARD_WIDGETS == [widget]
 
 
-def test_item_page_groups_the_options_in_one_menu(auth_client, item):
-    page = auth_client.get(
+def _item_page(client, item):
+    """The item page's own content, without the shared top bar."""
+    page = client.get(
         reverse('inventory:item_detail', args=[item.pk])
     ).content.decode()
+    return page.split('<main', 1)[1]
+
+
+def test_item_page_groups_the_options_in_one_menu(auth_client, item):
+    page = _item_page(auth_client, item)
 
     assert page.count('data-menu') == 1
     assert 'Tipo do item' in page
@@ -64,13 +68,9 @@ def test_item_page_groups_the_options_in_one_menu(auth_client, item):
 
 
 def test_item_page_has_no_menu_once_it_has_a_type(auth_client, item):
-    from apps.medications.models import Medication  # noqa: PLC0415
-
     Medication.objects.create(item=item, active_ingredient='dipyrone')
 
-    page = auth_client.get(
-        reverse('inventory:item_detail', args=[item.pk])
-    ).content.decode()
+    page = _item_page(auth_client, item)
 
     assert 'data-menu' not in page
     assert 'Tipo do item' not in page
