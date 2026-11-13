@@ -1,6 +1,6 @@
 """Notifications derived from the current data, with no scheduler needed.
 
-Apps register an `AlertSource` in `AppConfig.ready()`. Alerts are recomputed on
+Apps register an `AlertSource` in their `registry.py`. Alerts are recomputed on
 every request, so they disappear as soon as the cause is fixed.
 """
 
@@ -9,6 +9,7 @@ from dataclasses import dataclass
 
 DANGER = 'danger'
 WARNING = 'warning'
+SOURCES: list[AlertSource] = []
 
 
 @dataclass(frozen=True)
@@ -24,9 +25,6 @@ class Alert:
 class AlertSource:
     count: Callable[[], int]
     alerts: Callable[[], list[Alert]]
-
-
-SOURCES: list[AlertSource] = []
 
 
 def register_alert_source(source: AlertSource) -> None:
