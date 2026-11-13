@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans 'Usage history' %} · Quartermaster{% endblock %}
+{% block title %}{% trans 'Usage history' %} · V.A.U.L.T{% endblock %}
 {% block content %}
 <div class="mb-6">
   <a href="{% url 'ammunition:list' %}" class="text-sm text-stone-500 hover:underline dark:text-stone-400">← {% trans 'Ammunition' %}</a>
@@ -27,7 +27,7 @@
         <th class="hidden px-4 py-2 font-medium md:table-cell">{% trans 'User' %}</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+    <tbody class="divide-y divide-stone-100 dark:divide-white/5">
       {% for usage in page %}
       <tr>
         <td class="px-4 py-3">{{ usage.used_at|date:'SHORT_DATE_FORMAT' }}</td>
