@@ -94,7 +94,7 @@ def test_unit_symbol(category, unit, symbol):
     item = ItemFactory(category=category, unit=unit)
 
     assert item.unit_symbol == symbol
-    assert Item(unit=unit).get_unit_display()
+    assert Item.Unit(unit).label
 
 
 def test_calories_per_unit_cannot_be_negative(category):
@@ -130,7 +130,7 @@ def test_batch_dates_may_be_equal_or_missing(item, location):
     ).save()
     BatchFactory(item=item, location=location, packaged_at=day).save()
 
-    assert item.batches.count() == 2  # noqa: PLR2004
+    assert item.batches.count() == 2
 
 
 def test_shelf_life_must_be_positive(category):
