@@ -1,19 +1,21 @@
+from typing import cast, override
+
 from django import forms
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.ammunition.models import Ammunition, AmmunitionUsage
 from apps.ammunition.services import ROUND_UNITS
-from apps.core.forms import StyledFormMixin
+from apps.core.forms import StyledFormMixin, field_of
 from apps.inventory.forms import BasicItemForm
 from apps.inventory.models import Batch, Item
 
 
 def restrict_to_round_units(form: BasicItemForm) -> BasicItemForm:
     """Only units that count single rounds make sense for ammunition."""
-    form.fields['unit'].choices = [
-        (unit.value, unit.label) for unit in ROUND_UNITS
-    ]
+    unit_field = field_of(form, 'unit', forms.ChoiceField)
+    unit_field.choices = [(unit.value, unit.label) for unit in ROUND_UNITS]
+
     return form
 
 
@@ -32,16 +34,30 @@ class AmmunitionForm(StyledFormMixin, forms.ModelForm):
         self.item = item
 
     def clean(self):
-        cleaned = super().clean()
+        super().clean()
+
         if self.item and self.item.unit not in ROUND_UNITS:
             raise forms.ValidationError(
                 _('Ammunition must be counted in units or cartridges.')
             )
-        return cleaned
+
+        return self.cleaned_data
+
+
+class LotChoiceField(forms.ModelChoiceField):
+    """Pick a lot, labelled with its code, location and quantity."""
+
+    @override
+    def label_from_instance(self, obj):
+        batch = cast('Batch', obj)
+        lot = batch.lot_code or _('no lot code')
+        quantity = format(batch.quantity.normalize(), 'f')
+
+        return f'{lot} · {batch.location.name} · {quantity}'
 
 
 class UsageForm(StyledFormMixin, forms.Form):
-    batch = forms.ModelChoiceField(
+    batch = LotChoiceField(
         Batch.objects.none(),
         label=_('Lot'),
         empty_label=_('Select a lot'),
@@ -61,29 +77,25 @@ class UsageForm(StyledFormMixin, forms.Form):
 
     def __init__(self, *args, item: Item, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['batch'].queryset = (
+        batch_field = field_of(self, 'batch', LotChoiceField)
+        batch_field.queryset = (
             Batch.objects
             .filter(item=item, quantity__gt=0)
             .select_related('location')
             .order_by('lot_code', 'id')
         )
-        self.fields['batch'].label_from_instance = self._lot_label
         self.fields['used_at'].initial = timezone.localdate()
 
-    @staticmethod
-    def _lot_label(batch: Batch) -> str:
-        lot = batch.lot_code or _('no lot code')
-        quantity = format(batch.quantity.normalize(), 'f')
-        return f'{lot} · {batch.location.name} · {quantity}'
-
     def clean(self):
-        cleaned = super().clean()
-        batch = cleaned.get('batch')
-        rounds = cleaned.get('rounds')
+        super().clean()
+        batch = self.cleaned_data.get('batch')
+        rounds = self.cleaned_data.get('rounds')
+
         if batch and rounds and rounds > batch.quantity:
             self.add_error(
                 'rounds',
                 _('Only %(available)s rounds in this lot.')
                 % {'available': format(batch.quantity.normalize(), 'f')},
             )
-        return cleaned
+
+        return self.cleaned_data
