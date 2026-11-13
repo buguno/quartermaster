@@ -12,7 +12,12 @@ from apps.inventory.exceptions import (
     InvalidTransfer,
 )
 from apps.inventory.models import Batch, StockMovement
-from tests.inventory.factories import BatchFactory, ItemFactory
+from apps.inventory.services import EntryDetails
+from tests.inventory.factories import (
+    BatchFactory,
+    ItemFactory,
+    LocationFactory,
+)
 
 
 def _batch(item, location, quantity, expires_at=None):
@@ -28,7 +33,7 @@ def _batch(item, location, quantity, expires_at=None):
 
 def test_add_stock_creates_batch_and_movement(item, location):
     batch = services.add_stock(
-        item, location, Decimal('5'), expires_at=date(2027, 1, 1)
+        item, location, Decimal('5'), EntryDetails(expires_at=date(2027, 1, 1))
     )
 
     movement = StockMovement.objects.get()
@@ -40,7 +45,9 @@ def test_add_stock_creates_batch_and_movement(item, location):
 
 def test_add_stock_merges_into_matching_batch(item, location):
     first = services.add_stock(item, location, Decimal('5'))
-    second = services.add_stock(item, location, Decimal('2'), reason='top up')
+    second = services.add_stock(
+        item, location, Decimal('2'), EntryDetails(reason='top up')
+    )
 
     assert first.pk == second.pk
     assert Batch.objects.count() == 1
@@ -53,8 +60,12 @@ def test_add_stock_merges_into_matching_batch(item, location):
 
 def test_add_stock_different_expiry_makes_new_batch(item, location):
     sooner, later = date(2027, 1, 1), date(2028, 1, 1)
-    services.add_stock(item, location, Decimal(1), expires_at=sooner)
-    services.add_stock(item, location, Decimal(1), expires_at=later)
+    services.add_stock(
+        item, location, Decimal(1), EntryDetails(expires_at=sooner)
+    )
+    services.add_stock(
+        item, location, Decimal(1), EntryDetails(expires_at=later)
+    )
 
     assert set(Batch.objects.values_list('expires_at', flat=True)) == {
         sooner,
@@ -220,8 +231,6 @@ def test_inventory_totals(item, location):
 
 
 def _other_location():
-    from tests.inventory.factories import LocationFactory  # noqa: PLC0415
-
     location = LocationFactory()
     location.save()
     return location
@@ -262,7 +271,7 @@ def test_transfer_merges_into_matching_batch(item, location):
     existing.refresh_from_db()
     assert destination.pk == existing.pk
     assert existing.quantity == Decimal(7)
-    assert Batch.objects.count() == 2  # noqa: PLR2004
+    assert Batch.objects.count() == 2
 
 
 def test_transfer_rejects_same_location(batch):
@@ -275,7 +284,7 @@ def test_transfer_rejects_more_than_available(batch):
         services.transfer_stock(batch, _other_location(), Decimal(11))
 
     batch.refresh_from_db()
-    assert batch.quantity == Decimal(10)  # noqa: PLR2004
+    assert batch.quantity == Decimal(10)
     assert not StockMovement.objects.exists()
 
 
@@ -293,7 +302,7 @@ def test_movements_record_who_did_them(item, location, user):
 
     users = set(StockMovement.objects.values_list('user', flat=True))
     assert users == {user.pk}
-    assert StockMovement.objects.count() == 5  # noqa: PLR2004
+    assert StockMovement.objects.count() == 5
 
 
 def test_movement_user_is_optional(item, location):
@@ -326,7 +335,7 @@ def test_remove_from_batch_rejects_more_than_the_batch_has(batch):
         services.remove_from_batch(batch, Decimal(11))
 
     batch.refresh_from_db()
-    assert batch.quantity == Decimal(10)  # noqa: PLR2004
+    assert batch.quantity == Decimal(10)
     assert not StockMovement.objects.exists()
 
 
@@ -334,9 +343,6 @@ def test_remove_from_batch_rejects_more_than_the_batch_has(batch):
 def test_remove_from_batch_rejects_non_positive(batch, quantity):
     with pytest.raises(InvalidQuantity):
         services.remove_from_batch(batch, quantity)
-
-
-# --- Manufacture / packaging dates ----------------------------------------
 
 
 def _dated(item, location, quantity, **dates):
@@ -464,7 +470,7 @@ def test_add_stock_suggests_the_expiry_from_the_shelf_life(category, location):
     item.save()
 
     batch = services.add_stock(
-        item, location, Decimal(1), packaged_at=date(2026, 10, 1)
+        item, location, Decimal(1), EntryDetails(packaged_at=date(2026, 10, 1))
     )
 
     assert batch.packaged_at == date(2026, 10, 1)
@@ -480,8 +486,9 @@ def test_an_explicit_expiry_wins_over_the_shelf_life(category, location):
         item,
         location,
         Decimal(1),
-        packaged_at=date(2026, 10, 1),
-        expires_at=date(2030, 1, 1),
+        EntryDetails(
+            packaged_at=date(2026, 10, 1), expires_at=date(2030, 1, 1)
+        ),
     )
 
     assert batch.expires_at == date(2030, 1, 1)
@@ -489,27 +496,27 @@ def test_an_explicit_expiry_wins_over_the_shelf_life(category, location):
 
 def test_different_packaging_dates_are_different_batches(item, location):
     first = services.add_stock(
-        item, location, Decimal(1), packaged_at=date(2024, 1, 1)
+        item, location, Decimal(1), EntryDetails(packaged_at=date(2024, 1, 1))
     )
     other = services.add_stock(
-        item, location, Decimal(1), packaged_at=date(2025, 1, 1)
+        item, location, Decimal(1), EntryDetails(packaged_at=date(2025, 1, 1))
     )
     same = services.add_stock(
-        item, location, Decimal(2), packaged_at=date(2024, 1, 1)
+        item, location, Decimal(2), EntryDetails(packaged_at=date(2024, 1, 1))
     )
 
     assert first.pk != other.pk
     assert same.pk == first.pk
     assert same.quantity == Decimal(3)
-    assert Batch.objects.count() == 2  # noqa: PLR2004
+    assert Batch.objects.count() == 2
 
 
 def test_different_manufacture_dates_are_different_batches(item, location):
     first = services.add_stock(
-        item, location, Decimal(1), produced_at=date(2024, 1, 1)
+        item, location, Decimal(1), EntryDetails(produced_at=date(2024, 1, 1))
     )
     other = services.add_stock(
-        item, location, Decimal(1), produced_at=date(2025, 1, 1)
+        item, location, Decimal(1), EntryDetails(produced_at=date(2025, 1, 1))
     )
 
     assert first.pk != other.pk
@@ -540,7 +547,7 @@ def test_different_manufacture_dates_are_different_batches(item, location):
 )
 def test_add_stock_rejects_impossible_dates(item, location, dates, message):
     with pytest.raises(InvalidDates, match=message):
-        services.add_stock(item, location, Decimal(1), **dates)
+        services.add_stock(item, location, Decimal(1), EntryDetails(**dates))
 
     assert not Batch.objects.exists()
 
@@ -551,9 +558,11 @@ def test_dates_on_the_edges_are_valid(item, location):
         item,
         location,
         Decimal(1),
-        produced_at=date(2026, 11, 5),
-        packaged_at=date(2026, 11, 5),
-        expires_at=date(2026, 11, 5),
+        EntryDetails(
+            produced_at=date(2026, 11, 5),
+            packaged_at=date(2026, 11, 5),
+            expires_at=date(2026, 11, 5),
+        ),
     )
 
     assert batch.pk
@@ -579,9 +588,6 @@ def test_transfer_keeps_the_dates(item, location):
         destination.expires_at,
     ) == (date(2023, 1, 1), date(2024, 1, 1), date(2044, 1, 1))
     assert again.pk == destination.pk
-
-
-# --- Taking from a chosen location ----------------------------------------
 
 
 def test_remove_stock_only_uses_the_chosen_location(item, location):
@@ -632,7 +638,7 @@ def test_remove_stock_fails_when_the_chosen_location_has_too_little(
     with pytest.raises(InsufficientStock, match='apenas 2'):
         services.remove_stock(item, Decimal(5), location=location)
 
-    assert services.get_stock(item) == Decimal(52)  # noqa: PLR2004
+    assert services.get_stock(item) == Decimal(52)
     assert not StockMovement.objects.exists()
 
 
@@ -653,4 +659,4 @@ def test_locations_with_stock_lists_only_where_it_is(item, location):
     result = list(services.locations_with_stock(item))
 
     assert result == [location]
-    assert result[0].total == Decimal(5)  # noqa: PLR2004
+    assert result[0].total == Decimal(5)
