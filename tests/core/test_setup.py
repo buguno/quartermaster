@@ -9,8 +9,7 @@ from django.urls import reverse
 from apps.core import services
 from apps.core.exceptions import SetupClosed
 from apps.core.middleware import DomainErrorMiddleware
-
-PASSWORD = 'a-good-first-password-42'
+from tests.fakes import PASSWORD
 
 
 @pytest.fixture(autouse=True)

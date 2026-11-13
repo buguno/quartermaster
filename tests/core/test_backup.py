@@ -22,13 +22,13 @@ from apps.inventory.models import (
     Location,
     StockMovement,
 )
+from tests.fakes import PASSPHRASE, PASSWORD
 from tests.inventory.factories import (
     CategoryFactory,
     ItemFactory,
     LocationFactory,
 )
 
-PASSPHRASE = 'correct horse battery'
 STOCKED_MOVEMENTS = 2  # the entry and the exit of the `stocked` fixture
 
 needs_gpg = pytest.mark.skipif(
@@ -158,7 +158,7 @@ def test_restore_brings_everything_back(stocked, user):
     batch = Batch.objects.get(item=item)
     movements = StockMovement.objects.filter(batch=batch)
     assert movements.count() == STOCKED_MOVEMENTS
-    assert restored_user.check_password('s3cret-pass')
+    assert restored_user.check_password(PASSWORD)
     assert UserProfile.objects.get(user=restored_user).theme == 'dark'
     assert {m.user for m in movements} == {restored_user}
 

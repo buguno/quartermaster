@@ -6,11 +6,12 @@ from django.urls import reverse
 
 from apps.core import services
 from apps.inventory.models import Batch
+from tests.fakes import PASSWORD
 
 
 @pytest.fixture
 def viewer(client, db):
-    user = User.objects.create_user(username='viewer', password='s3cret-pass')
+    user = User.objects.create_user(username='viewer', password=PASSWORD)
     profile = services.get_profile(user)
     profile.language = 'pt-br'
     profile.read_only = True
@@ -86,9 +87,7 @@ def test_normal_pages_are_not_marked_read_only(auth_client):
 
 
 def test_superusers_are_never_read_only(client, db):
-    admin = User.objects.create_superuser(
-        username='root', password='s3cret-pass'
-    )
+    admin = User.objects.create_superuser(username='root', password=PASSWORD)
     profile = services.get_profile(admin)
     profile.read_only = True
     profile.save()
@@ -109,9 +108,7 @@ def test_anonymous_requests_pass_through(client, db):
 
 
 def test_user_admin_edits_the_read_only_flag(client, db):
-    admin = User.objects.create_superuser(
-        username='root', password='s3cret-pass'
-    )
+    admin = User.objects.create_superuser(username='root', password=PASSWORD)
     client.force_login(admin)
     target = User.objects.create_user(username='kid')
 

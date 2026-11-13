@@ -7,9 +7,7 @@ from django.urls import reverse
 
 from apps.core import services
 from apps.core.models import UserProfile
-
-PASSWORD = 's3cret-pass'
-NEW_PASSWORD = 'brand-new-pass-42'
+from tests.fakes import NEW_PASSWORD, PASSWORD, fake
 
 
 def _settings_url():
@@ -224,9 +222,10 @@ def test_change_password_requires_post(auth_client):
 
 
 def test_users_only_change_their_own_password(auth_client, user, db):
-    other = User.objects.create_user(username='bia', password='other-pass-99')
+    other_password = fake.password(length=20)
+    other = User.objects.create_user(username='bia', password=other_password)
 
     auth_client.post(reverse('core:change_password'), _password_data())
 
     other.refresh_from_db()
-    assert other.check_password('other-pass-99')
+    assert other.check_password(other_password)

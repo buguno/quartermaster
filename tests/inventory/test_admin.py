@@ -4,14 +4,13 @@ import pytest
 from django.contrib.auth.models import User
 from django.urls import reverse
 
+from tests.fakes import PASSWORD
 from tests.inventory.factories import StockMovementFactory
 
 
 @pytest.fixture
 def admin_client(client, db):
-    user = User.objects.create_superuser(
-        username='admin', password='admin-pass'
-    )
+    user = User.objects.create_superuser(username='admin', password=PASSWORD)
     client.force_login(user)
     return client
 
