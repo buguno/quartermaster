@@ -83,4 +83,5 @@ class Medication(models.Model):
         if self.strength_value is None:
             return ''
         value = format(self.strength_value.normalize(), 'f')
-        return f'{value} {self.get_strength_unit_display()}'
+        unit = self.StrengthUnit(self.strength_unit).label
+        return f'{value} {unit}'
