@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{{ title }} · Quartermaster{% endblock %}
+{% block title %}{{ title }} · V.A.U.L.T{% endblock %}
 {% block content %}
 <div class="mb-6 flex items-center justify-between gap-3">
   <h1 class="text-2xl font-semibold tracking-tight">{{ title }}</h1>
-  <a href="{{ create_url }}" class="btn-primary">{% trans 'New' %}</a>
+  <a href="{{ create_url }}" class="btn-primary" data-write>{% trans 'New' %}</a>
 </div>
 <div class="card overflow-hidden">
   <table class="w-full text-sm">
@@ -15,7 +15,7 @@
         <th class="px-4 py-2"></th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+    <tbody class="divide-y divide-stone-100 dark:divide-white/5">
       {% for obj in object_list %}
       <tr>
         <td class="px-4 py-3">
@@ -25,7 +25,7 @@
         <td class="px-4 py-3 text-right tabular-nums">{{ obj.usage }}</td>
         <td class="px-4 py-3">
           <div class="flex justify-end gap-2">
-            <a href="{% url edit_route obj.pk %}" class="btn-secondary">{% trans 'Edit' %}</a>
+            <a href="{% url edit_route obj.pk %}" data-write class="btn-secondary">{% trans 'Edit' %}</a>
             <form method="post" action="{% url delete_route obj.pk %}" onsubmit="return confirm('{% trans 'Delete this record?' as confirm_text %}{{ confirm_text|escapejs }}')">
               {% csrf_token %}
               <button type="submit" class="btn-danger">{% trans 'Delete' %}</button>
