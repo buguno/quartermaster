@@ -1,5 +1,6 @@
 import gettext
 import re
+from decimal import Decimal
 from http import HTTPStatus
 from pathlib import Path
 
@@ -8,6 +9,10 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils import translation
 from freezegun import freeze_time
+
+from apps.inventory import services
+from apps.inventory.exceptions import InvalidQuantity
+from apps.inventory.models import Item
 
 LOCALE_DIR = Path(settings.BASE_DIR) / 'locale'
 PLACEHOLDER = re.compile(r'%\(\w+\)s')
@@ -87,9 +92,6 @@ def _login_page(client, language):
     return client.get(reverse('core:login')).content.decode()
 
 
-# --- Language switching ---------------------------------------------------
-
-
 @pytest.mark.parametrize(
     ('language', 'text', 'html_lang'),
     [
@@ -164,9 +166,6 @@ def test_signed_in_pages_have_no_header_language_switcher(auth_client):
     assert 'name="language"' not in page
 
 
-# --- Locale-aware formatting ----------------------------------------------
-
-
 @freeze_time('2026-11-05 15:00')
 @pytest.mark.parametrize(
     ('language', 'expected'),
@@ -200,8 +199,6 @@ def test_short_dates_follow_language(auth_client, batch, language, expected):
 
 
 def test_unit_symbols_are_translated(category):
-    from apps.inventory.models import Item  # noqa: PLC0415
-
     item = Item(unit='box')
 
     with translation.override('pt-br'):
@@ -210,28 +207,20 @@ def test_unit_symbols_are_translated(category):
         assert str(item.unit_symbol) == 'box'
 
 
-def test_service_messages_follow_language(db):
-    from decimal import Decimal  # noqa: PLC0415
-
-    from apps.inventory import services  # noqa: PLC0415
-    from apps.inventory.exceptions import InvalidQuantity  # noqa: PLC0415
-
+def test_service_messages_follow_language(item, location):
     messages = {}
     for language in ('pt-br', 'en-us'):
         with (
             translation.override(language),
             pytest.raises(InvalidQuantity) as error,
         ):
-            services.add_stock(None, None, Decimal(0))
+            services.add_stock(item, location, Decimal(0))
         messages[language] = str(error.value)
 
     assert messages == {
         'pt-br': 'A quantidade deve ser maior que zero.',
         'en-us': 'Quantity must be greater than zero.',
     }
-
-
-# --- Translation catalogs -------------------------------------------------
 
 
 @pytest.mark.parametrize('lang', ['pt_BR'])
@@ -259,16 +248,19 @@ def test_catalog_keeps_placeholders(lang):
 @pytest.mark.parametrize('lang', ['pt_BR'])
 def test_compiled_catalog_matches_the_po_file(lang):
     mo = LOCALE_DIR / lang / 'LC_MESSAGES/django.mo'
-    compiled = gettext.GNUTranslations(mo.open('rb'))._catalog  # noqa: SLF001
+    compiled = gettext.GNUTranslations(mo.open('rb'))
 
     def compiled_text(key, text):
         context, msgid = key
-        if '\x00' in text:  # plural: compiled as (msgid, n) -> form
+        if '\x00' in text:  # plural: one form per count, 1 then 2, 3...
             forms = text.split('\x00')
             return '\x00'.join(
-                compiled.get((msgid, n), '') for n in range(len(forms))
+                compiled.ngettext(msgid, '', count)
+                for count in range(1, len(forms) + 1)
             )
-        return compiled.get(f'{context}\x04{msgid}' if context else msgid)
+        if context:
+            return compiled.pgettext(context, msgid)
+        return compiled.gettext(msgid)
 
     stale = [
         key
