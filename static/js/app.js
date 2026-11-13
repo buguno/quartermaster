@@ -57,3 +57,16 @@ document.addEventListener('click', (event) => {
     if (!menu.contains(event.target)) menu.removeAttribute('open');
   });
 });
+
+// Print buttons; paper is always printed with the light theme.
+document.addEventListener('click', (event) => {
+  if (event.target.closest('[data-print]')) window.print();
+});
+let darkBeforePrint = false;
+window.addEventListener('beforeprint', () => {
+  darkBeforePrint = document.documentElement.classList.contains('dark');
+  document.documentElement.classList.remove('dark');
+});
+window.addEventListener('afterprint', () => {
+  if (darkBeforePrint) document.documentElement.classList.add('dark');
+});
