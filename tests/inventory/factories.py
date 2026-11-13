@@ -10,17 +10,19 @@ from apps.inventory.models import (
     Location,
     StockMovement,
 )
+from tests.fakes import fake
 
+# The sequence number keeps names unique; the fake word keeps them realistic.
 CategoryFactory = make_factory(
-    Category, name=Sequence(lambda n: f'category {n}')
+    Category, name=Sequence(lambda n: f'{fake.word()} {n}')
 )
 
 LocationFactory = make_factory(
-    Location, name=Sequence(lambda n: f'location {n}')
+    Location, name=Sequence(lambda n: f'{fake.word()} {n}')
 )
 
 ItemFactory = make_factory(
-    Item, name=Sequence(lambda n: f'item {n}'), category=None
+    Item, name=Sequence(lambda n: f'{fake.word()} {n}'), category=None
 )
 
 BatchFactory = make_factory(

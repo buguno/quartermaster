@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import translation
 from testcontainers.postgres import PostgresContainer
 
+from tests.fakes import PASSWORD, fake
 from tests.inventory.factories import (
     BatchFactory,
     CategoryFactory,
@@ -73,7 +74,9 @@ def batch(item, location):
 
 @pytest.fixture
 def user(db):
-    return User.objects.create_user(username='ana', password='s3cret-pass')
+    return User.objects.create_user(
+        username=fake.user_name(), password=PASSWORD
+    )
 
 
 @pytest.fixture
