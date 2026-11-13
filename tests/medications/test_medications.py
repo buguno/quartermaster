@@ -27,9 +27,6 @@ def _medication(item, **fields):
     return Medication.objects.create(item=item, **(defaults | fields))
 
 
-# --- Model ----------------------------------------------------------------
-
-
 def test_strength_display_and_str(item):
     medication = _medication(item)
 
@@ -50,9 +47,6 @@ def test_strength_display_is_empty_without_strength(item):
 def test_strength_value_and_unit_must_agree(item, value, unit):
     with pytest.raises(IntegrityError), transaction.atomic():
         _medication(item, strength_value=value, strength_unit=unit)
-
-
-# --- Form -----------------------------------------------------------------
 
 
 def _form_data(**overrides):
@@ -81,9 +75,6 @@ def test_form_rejects_half_a_strength(db, overrides):
 
     assert not form.is_valid()
     assert 'strength_unit' in form.errors
-
-
-# --- Services -------------------------------------------------------------
 
 
 def test_list_medications_only_returns_medications(category, location):
@@ -128,9 +119,6 @@ def test_create_medication_is_all_or_nothing(category):
         services.create_medication(item, medication)
 
     assert not Item.objects.filter(name='Broken').exists()
-
-
-# --- Views ----------------------------------------------------------------
 
 
 def test_list_page(auth_client, category):
