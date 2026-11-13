@@ -217,7 +217,7 @@ def test_mix_without_movements(db):
 
 @freeze_time('2026-11-05 15:00')
 def test_busiest_users_ranks_by_movements(item, location, user):
-    bob = User.objects.create_user(username='bob', password='x')
+    bob = User.objects.create_user(username='bob')
     for _ in range(3):
         services.add_stock(item, location, Decimal(1), user=user)
     services.add_stock(item, location, Decimal(1), user=bob)
@@ -226,7 +226,7 @@ def test_busiest_users_ranks_by_movements(item, location, user):
     ranked = insights.busiest_users(today=TODAY)
 
     assert [(r.label, r.count, r.percent) for r in ranked] == [
-        ('ana', 3, 100),
+        (user.username, 3, 100),
         ('bob', 1, 33),
         ('Desconhecido', 1, 33),
     ]

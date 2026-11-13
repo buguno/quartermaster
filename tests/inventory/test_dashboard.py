@@ -51,16 +51,18 @@ def test_dashboard_empty_state(auth_client):
 @pytest.mark.parametrize(
     ('moment', 'greeting'),
     [
-        ('2026-11-05 12:00', 'Bom dia, ana'),  # 09:00 in São Paulo
-        ('2026-11-05 17:00', 'Boa tarde, ana'),
-        ('2026-11-05 23:00', 'Boa noite, ana'),
+        ('2026-11-05 12:00', 'Bom dia'),  # 09:00 in São Paulo
+        ('2026-11-05 17:00', 'Boa tarde'),
+        ('2026-11-05 23:00', 'Boa noite'),
     ],
 )
-def test_dashboard_greets_by_the_time_of_day(auth_client, moment, greeting):
+def test_dashboard_greets_by_the_time_of_day(
+    auth_client, user, moment, greeting
+):
     with freeze_time(moment):
         response = auth_client.get(reverse('inventory:dashboard'))
 
-    assert greeting in response.content.decode()
+    assert f'{greeting}, {user.username}' in response.content.decode()
 
 
 def test_dashboard_greets_by_first_name(auth_client, user):

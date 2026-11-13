@@ -216,7 +216,7 @@ def test_template_download(auth_client):
     assert response.content.decode().startswith('item,category,location')
 
 
-def test_uploading_a_file_imports_it(auth_client):
+def test_uploading_a_file_imports_it(auth_client, user):
     response = auth_client.post(
         reverse('inventory:stock_import'),
         {'csv_file': _upload(_csv('Beans,Food,Pantry,2,kg,,,'))},
@@ -225,7 +225,7 @@ def test_uploading_a_file_imports_it(auth_client):
     assert response.status_code == HTTPStatus.FOUND
     assert response.url == reverse('inventory:item_list')
     assert Batch.objects.get().quantity == Decimal(2)
-    assert StockMovement.objects.get().user.username == 'ana'
+    assert StockMovement.objects.get().user == user
 
 
 def test_uploading_a_windows_1252_file(auth_client):

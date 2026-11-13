@@ -86,15 +86,15 @@ def test_item_list_htmx_returns_partial_only(auth_client, item):
 
 
 def test_item_list_paginates(auth_client, category):
-    for _ in range(21):
-        ItemFactory(category=category).save()
+    for number in range(21):
+        ItemFactory(category=category, name=f'paged {number}').save()
 
     first = auth_client.get(_url('item_list'))
-    second = auth_client.get(_url('item_list'), {'page': 2, 'q': 'item'})
+    second = auth_client.get(_url('item_list'), {'page': 2, 'q': 'paged'})
 
     assert len(first.context['page']) == 20
     assert len(second.context['page']) == 1
-    assert 'q=item&page=1' in second.content.decode()
+    assert 'q=paged&page=1' in second.content.decode()
 
 
 def test_item_create(auth_client, category):
@@ -565,8 +565,9 @@ def test_history_shows_who_did_it(auth_client, user, item, location):
     listing = auth_client.get(_url('movement_list'))
     detail = auth_client.get(_url('item_detail', item.pk))
 
-    assert listing.content.decode().count('por ana') == 1
-    assert detail.content.decode().count('por ana') == 1
+    author = f'por {user.username}'
+    assert listing.content.decode().count(author) == 1
+    assert detail.content.decode().count(author) == 1
 
 
 def test_item_form_offers_grouped_units(auth_client):

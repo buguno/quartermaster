@@ -144,13 +144,13 @@ def test_list_page_search_and_empty_state(auth_client, db):
 
 
 def test_list_page_paginates(auth_client, category):
-    for _ in range(21):
-        item = ItemFactory(category=category)
+    for number in range(21):
+        item = ItemFactory(category=category, name=f'paged {number}')
         item.save()
         _medication(item)
 
     page = auth_client.get(
-        reverse('medications:list'), {'page': 2, 'q': 'item'}
+        reverse('medications:list'), {'page': 2, 'q': 'paged'}
     )
 
     assert len(page.context['page']) == 1
