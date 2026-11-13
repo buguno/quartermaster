@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{{ kit.name }} · Quartermaster{% endblock %}
+{% block title %}{{ kit.name }} · V.A.U.L.T{% endblock %}
 {% block content %}
 <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
   <div>
-    <a href="{% url 'kits:list' %}" class="text-sm text-stone-500 hover:underline dark:text-stone-400">← {% trans 'Kits' %}</a>
+    <a href="{% url 'kits:list' %}" class="text-sm print:hidden text-stone-500 hover:underline dark:text-stone-400">← {% trans 'Kits' %}</a>
     <h1 class="text-2xl font-semibold tracking-tight">{{ kit.name }}</h1>
     <p class="text-sm text-stone-500 dark:text-stone-400">{{ kit.location.name }}{% if kit.description %} · {{ kit.description }}{% endif %}</p>
   </div>
-  <div class="flex gap-2">
-    <a href="{% url 'kits:update' kit.pk %}" class="btn-secondary">{% trans 'Edit' %}</a>
+  <div class="flex gap-2 print:hidden">
+    <button type="button" data-print class="btn-secondary">{% trans 'Print' %}</button>
+    <a href="{% url 'kits:update' kit.pk %}" data-write class="btn-secondary">{% trans 'Edit' %}</a>
     <form method="post" action="{% url 'kits:delete' kit.pk %}" onsubmit="return confirm('{% trans 'Delete this record?' as confirm_text %}{{ confirm_text|escapejs }}')">
       {% csrf_token %}
       <button type="submit" class="btn-danger">{% trans 'Delete' %}</button>
@@ -18,7 +19,7 @@
 </div>
 
 <section class="mb-6 grid gap-3 sm:grid-cols-3">
-  <div class="rounded-2xl border p-4 {% if status.ready %}border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40{% else %}border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900{% endif %}">
+  <div class="card p-4 {% if status.ready %}!border-emerald-300 !bg-emerald-50 dark:!border-emerald-500/30 dark:!bg-emerald-500/10{% endif %}">
     <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Status' %}</p>
     <p class="mt-1 text-2xl font-semibold">{% if status.ready %}{% trans 'Ready' %}{% elif status.lines %}{% trans 'Incomplete' %}{% else %}{% trans 'Empty list' %}{% endif %}</p>
   </div>
@@ -33,21 +34,23 @@
 </section>
 
 <section class="card mb-6 overflow-hidden">
-  <header class="border-b border-stone-200 px-4 py-3 dark:border-stone-800"><h2 class="font-semibold">{% trans 'Checklist' %}</h2></header>
+  <header class="border-b border-stone-200 px-4 py-3 dark:border-white/10"><h2 class="font-semibold">{% trans 'Checklist' %}</h2></header>
   {% if status.lines %}
   <table class="w-full text-sm">
     <thead class="text-left text-stone-500 dark:text-stone-400">
       <tr>
+        <th class="hidden w-8 px-4 py-2 print:table-cell"></th>
         <th class="px-4 py-2 font-medium">{% trans 'Item' %}</th>
         <th class="px-4 py-2 text-right font-medium">{% trans 'In the kit' %}</th>
         <th class="px-4 py-2 text-right font-medium">{% trans 'Required' %}</th>
         <th class="px-4 py-2"></th>
-        <th class="px-4 py-2"></th>
+        <th class="px-4 py-2 print:hidden"></th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+    <tbody class="divide-y divide-stone-100 dark:divide-white/5">
       {% for line in status.lines %}
       <tr>
+        <td class="hidden px-4 py-3 text-lg leading-none print:table-cell" aria-hidden="true">☐</td>
         <td class="px-4 py-3"><a href="{{ line.item.get_absolute_url }}" class="font-medium hover:underline">{{ line.item.name }}</a></td>
         <td class="px-4 py-3 text-right tabular-nums {% if not line.complete %}font-semibold text-red-700 dark:text-red-400{% endif %}">{{ line.valid|floatformat:"-3" }} {{ line.item.unit_symbol }}</td>
         <td class="px-4 py-3 text-right tabular-nums text-stone-500 dark:text-stone-400">{{ line.required|floatformat:"-3" }} {{ line.item.unit_symbol }}</td>
@@ -59,7 +62,7 @@
             {% if line.expiring %}<span class="badge badge-amber">{% trans 'Expiring' %}</span>{% endif %}
           </div>
         </td>
-        <td class="px-4 py-3 text-right">
+        <td class="px-4 py-3 text-right print:hidden">
           <form method="post" action="{% url 'kits:item_remove' line.kit_item.pk %}">
             {% csrf_token %}
             <button type="submit" class="text-stone-400 hover:text-red-600" aria-label="{% trans 'Remove' %}" title="{% trans 'Remove' %}">✕</button>
@@ -74,7 +77,7 @@
   {% endif %}
 </section>
 
-<form method="post" action="{% url 'kits:item_set' kit.pk %}" class="card space-y-3 p-4">
+<form method="post" action="{% url 'kits:item_set' kit.pk %}" class="card space-y-3 p-4 print:hidden">
   {% csrf_token %}
   <h2 class="font-semibold">{% trans 'Add to the list' %}</h2>
   <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Adding an item that is already listed updates its required quantity.' %}</p>
