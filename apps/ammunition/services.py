@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
@@ -18,7 +19,7 @@ ROUND_UNITS = (Item.Unit.UNIT, Item.Unit.CARTRIDGE)
 
 
 def list_ammunition(
-    *, query: str = '', caliber: str = ''
+    query: str = '', caliber: str = ''
 ) -> models.QuerySet[Item]:
     """Ammunition items with rounds on hand, by name."""
     items = inventory.items_with_stock().filter(ammunition__isnull=False)
@@ -28,8 +29,10 @@ def list_ammunition(
             | Q(ammunition__caliber__icontains=query)
             | Q(ammunition__manufacturer__icontains=query)
         )
+
     if caliber:
         items = items.filter(ammunition__caliber=caliber)
+
     return items.select_related('ammunition')
 
 
@@ -66,16 +69,24 @@ def save_ammunition(item: Item, ammunition: Ammunition) -> Ammunition:
     return ammunition
 
 
-def record_usage(  # noqa: PLR0913
+@dataclass(frozen=True)
+class UsageDetails:
+    """When the rounds were used and anything worth remembering about it."""
+
+    used_at: date | None = None
+    notes: str = ''
+
+
+def record_usage(
     batch: Batch,
     rounds: int,
     reason: str,
-    *,
-    used_at: date | None = None,
-    notes: str = '',
+    details: UsageDetails | None = None,
     user: AbstractBaseUser | None = None,
 ) -> AmmunitionUsage:
     """Log rounds used from a chosen lot and take them out of stock."""
+    details = details or UsageDetails()
+
     if not Ammunition.objects.filter(item_id=batch.item_id).exists():
         raise NotAmmunition(_('This item is not registered as ammunition.'))
 
@@ -83,28 +94,30 @@ def record_usage(  # noqa: PLR0913
         movement = inventory.remove_from_batch(
             batch,
             Decimal(rounds),
-            reason=str(AmmunitionUsage.Reason(reason).label),
-            user=user,
+            str(AmmunitionUsage.Reason(reason).label),
+            user,
         )
+
         return AmmunitionUsage.objects.create(
             batch=batch,
             rounds=rounds,
             reason=reason,
-            used_at=used_at or timezone.localdate(),
-            notes=notes,
+            used_at=details.used_at or timezone.localdate(),
+            notes=details.notes,
             user=user,
             movement=movement,
         )
 
 
 def list_usage(
-    *, reason: str = '', query: str = ''
+    reason: str = '', query: str = ''
 ) -> models.QuerySet[AmmunitionUsage]:
     usage = AmmunitionUsage.objects.select_related(
         'batch__item__ammunition', 'batch__location', 'user'
     )
     if reason in AmmunitionUsage.Reason.values:
         usage = usage.filter(reason=reason)
+
     if query:
         usage = usage.filter(
             Q(batch__item__name__icontains=query)
