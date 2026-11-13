@@ -4,9 +4,12 @@ from http import HTTPStatus
 
 import pytest
 from django.db import IntegrityError, transaction
+from django.forms import ModelChoiceField
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.core.forms import field_of
+from apps.inventory import services as inventory
 from apps.inventory.exceptions import InvalidQuantity
 from apps.inventory.models import Location
 from apps.kits import services
@@ -42,9 +45,6 @@ def _item(category, name):
     return item
 
 
-# --- Models ---------------------------------------------------------------
-
-
 def test_strings_and_url(kit, item):
     kit_item = KitItem.objects.create(
         kit=kit, item=item, required_quantity=Decimal(2)
@@ -68,9 +68,6 @@ def test_an_item_appears_once_per_kit(kit, item):
 def test_required_quantity_must_be_positive(kit, item, quantity):
     with pytest.raises(IntegrityError), transaction.atomic():
         KitItem.objects.create(kit=kit, item=item, required_quantity=quantity)
-
-
-# --- Services -------------------------------------------------------------
 
 
 def test_create_kit_makes_a_location_named_after_it(db):
@@ -144,7 +141,7 @@ def test_status_compares_the_list_with_the_kit_location(kit, category):
     assert lines['Gloves'].valid == Decimal(0)
     assert lines['Gloves'].missing == Decimal(1)
     assert status.complete_count == 1
-    assert status.percent == 33  # noqa: PLR2004
+    assert status.percent == 33
     assert not status.ready
     assert status.needs_attention
 
@@ -171,7 +168,7 @@ def test_a_complete_kit_without_problems_is_ready(kit, category):
     status = services.kit_status(kit)
 
     assert status.ready
-    assert status.percent == 100  # noqa: PLR2004
+    assert status.percent == 100
     assert not status.needs_attention
 
 
@@ -206,16 +203,14 @@ def test_statuses_for_many_kits_use_two_queries(
     assert [len(s.lines) for s in statuses] == [1, 1, 1]
 
 
-# --- Form -----------------------------------------------------------------
-
-
 def test_form_offers_only_free_locations(kit):
     free = LocationFactory()
     free.save()
 
     form = KitForm()
 
-    assert list(form.fields['location'].queryset) == [free]
+    location_field = field_of(form, 'location', ModelChoiceField)
+    assert list(location_field.queryset or []) == [free]
 
 
 def test_form_for_an_existing_kit_keeps_its_own_location(kit):
@@ -224,10 +219,8 @@ def test_form_for_an_existing_kit_keeps_its_own_location(kit):
 
     form = KitForm(instance=kit)
 
-    assert set(form.fields['location'].queryset) == {kit.location, free}
-
-
-# --- Views ----------------------------------------------------------------
+    location_field = field_of(form, 'location', ModelChoiceField)
+    assert set(location_field.queryset or []) == {kit.location, free}
 
 
 def test_list_page(auth_client, kit, category):
@@ -449,9 +442,6 @@ def test_admin_changelist(auth_client, kit, user):
     assert response.status_code == HTTPStatus.OK
 
 
-# --- Dashboard summary ----------------------------------------------------
-
-
 def test_dashboard_has_no_kit_section_without_kits(auth_client, db):
     page = auth_client.get(reverse('inventory:dashboard')).content.decode()
 
@@ -500,3 +490,18 @@ def test_dashboard_limits_the_list(auth_client, db):
 
     assert '0 de 8 kits prontos' in page
     assert 'e mais 2' in page
+
+
+def test_a_kit_location_is_skipped_by_automatic_exits(category, kit):
+    item = _item(category, 'Gauze')
+    shelf_location = LocationFactory()
+    shelf_location.save()
+    in_kit = _stock(item, kit.location, 5, expires_at=date(2030, 1, 1))
+    shelf = _stock(item, shelf_location, 5, expires_at=date(2031, 1, 1))
+
+    inventory.remove_stock(item, Decimal(4))
+
+    in_kit.refresh_from_db()
+    shelf.refresh_from_db()
+    assert in_kit.quantity == Decimal(5)
+    assert shelf.quantity == Decimal(1)
