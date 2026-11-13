@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 import pytest
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.urls import reverse
 
 from tests.inventory.factories import StockMovementFactory
@@ -9,7 +9,7 @@ from tests.inventory.factories import StockMovementFactory
 
 @pytest.fixture
 def admin_client(client, db):
-    user = get_user_model().objects.create_superuser(
+    user = User.objects.create_superuser(
         username='admin', password='admin-pass'
     )
     client.force_login(user)
