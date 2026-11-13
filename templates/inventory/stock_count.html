@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Stock count' %} · V.A.U.L.T{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Stock count' %}</h1>
+  <p class="text-sm text-stone-500 dark:text-stone-400">{% trans 'Count what is on the shelf and type it in. Only the batches that differ are adjusted, and each one is recorded in the movement history.' %}</p>
+</div>
+
+<form method="get" class="mb-4 flex flex-col gap-2 sm:flex-row">
+  <select name="location" class="input sm:max-w-xs" aria-label="{% trans 'Location' %}">
+    <option value="">{% trans 'Select a location' %}</option>
+    {% for loc in locations %}<option value="{{ loc.pk }}"{% if location and loc.pk == location.pk %} selected{% endif %}>{{ loc.name }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="btn-secondary">{% trans 'Show batches' %}</button>
+</form>
+
+{% if page %}
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="location" value="{{ location.pk }}">
+  <input type="hidden" name="page" value="{{ page.number }}">
+  <section class="card overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="text-left text-stone-500 dark:text-stone-400">
+        <tr>
+          <th class="px-4 py-2 font-medium">{% trans 'Item' %}</th>
+          <th class="hidden px-4 py-2 font-medium sm:table-cell">{% trans 'Lot code' %}</th>
+          <th class="hidden px-4 py-2 font-medium md:table-cell">{% trans 'Expires at' %}</th>
+          <th class="px-4 py-2 text-right font-medium">{% trans 'In the system' %}</th>
+          <th class="w-40 px-4 py-2 font-medium">{% trans 'Counted' %}</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-stone-100 dark:divide-white/5">
+        {% for batch in page %}
+        <tr>
+          <td class="px-4 py-2.5"><a href="{{ batch.item.get_absolute_url }}" class="font-medium hover:underline">{{ batch.item.name }}</a></td>
+          <td class="hidden px-4 py-2.5 text-stone-500 sm:table-cell dark:text-stone-400">{{ batch.lot_code|default:"—" }}</td>
+          <td class="hidden px-4 py-2.5 md:table-cell">{% if batch.expires_at %}{{ batch.expires_at|date:'SHORT_DATE_FORMAT' }}{% else %}<span class="text-stone-400">—</span>{% endif %}</td>
+          <td class="px-4 py-2.5 text-right tabular-nums">{{ batch.quantity|floatformat:"-3" }} {{ batch.item.unit_symbol }}</td>
+          <td class="px-4 py-2.5"><input type="text" inputmode="decimal" name="count_{{ batch.pk }}" class="input py-1.5 text-right tabular-nums" placeholder="{{ batch.quantity|floatformat:'-3' }}" aria-label="{% trans 'Counted' %}: {{ batch.item.name }}" autocomplete="off"></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'partials/pagination.html' %}
+  </section>
+  <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div class="sm:w-80">
+      <label for="reason" class="mb-1 block text-sm font-medium">{% trans 'Reason' %}</label>
+      <input id="reason" type="text" name="reason" maxlength="200" class="input" placeholder="{% trans 'Physical count' %}">
+    </div>
+    <button type="submit" class="btn-primary">{% trans 'Apply count' %}</button>
+  </div>
+  <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">{% trans 'Leave a field empty to keep that batch as it is.' %}</p>
+</form>
+{% elif location %}
+<p class="card px-4 py-12 text-center text-stone-500 dark:text-stone-400">{% trans 'No stock at this location.' %}</p>
+{% else %}
+<p class="card px-4 py-12 text-center text-stone-500 dark:text-stone-400">{% trans 'Choose a location to count.' %}</p>
+{% endif %}
+{% endblock %}
