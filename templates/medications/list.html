@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans 'Medications' %} · Quartermaster{% endblock %}
+{% block title %}{% trans 'Medications' %} · V.A.U.L.T{% endblock %}
 {% block content %}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
   <h1 class="text-2xl font-semibold tracking-tight">{% trans 'Medications' %}</h1>
-  <a href="{% url 'medications:create' %}" class="btn-primary">{% trans 'New medication' %}</a>
+  <a href="{% url 'medications:create' %}" class="btn-primary" data-write>{% trans 'New medication' %}</a>
 </div>
 <form method="get" class="mb-4 flex flex-col gap-2 sm:flex-row">
   <input type="search" name="q" value="{{ query }}" placeholder="{% trans 'Search name or active ingredient…' %}" class="input sm:max-w-sm">
@@ -21,7 +21,7 @@
         <th class="px-4 py-2 font-medium">{% trans 'Next expiry' %}</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+    <tbody class="divide-y divide-stone-100 dark:divide-white/5">
       {% for item in page %}
       <tr>
         <td class="px-4 py-3">
