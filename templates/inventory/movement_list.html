@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans 'Movements' %} · Quartermaster{% endblock %}
+{% block title %}{% trans 'Movements' %} · V.A.U.L.T{% endblock %}
 {% block content %}
 <h1 class="mb-6 text-2xl font-semibold tracking-tight">{% trans 'Movements' %}</h1>
 <form method="get" class="mb-4 flex flex-col gap-2 sm:flex-row">
@@ -13,7 +13,7 @@
 </form>
 <div class="card overflow-hidden">
   {% if page %}
-  <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+  <ul class="divide-y divide-stone-100 text-sm dark:divide-white/5">
     {% for movement in page %}
     {% include 'inventory/partials/movement_row.html' with show_item=True %}
     {% endfor %}
