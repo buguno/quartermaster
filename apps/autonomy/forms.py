@@ -19,3 +19,7 @@ class HouseholdForm(StyledFormMixin, forms.ModelForm):
                 attrs={'step': '0.1', 'min': '0.1'}
             ),
         }
+
+
+class SimulationForm(HouseholdForm):
+    """Same fields as the household, only used to try other numbers."""
