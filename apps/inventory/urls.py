@@ -24,6 +24,11 @@ urlpatterns = [
         name='batch_transfer',
     ),
     path('movements/', views.movement_list, name='movement_list'),
+    path('shopping/', views.shopping_list, name='shopping_list'),
+    path('insights/', views.insights, name='insights'),
+    path('count/', views.stock_count, name='stock_count'),
+    path('import/', views.stock_import, name='stock_import'),
+    path('import/template.csv', views.import_template, name='import_template'),
     path('categories/', views.CategoryList.as_view(), name='category_list'),
     path(
         'categories/new/',
