@@ -4,7 +4,7 @@ from django import forms
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.forms import StyledFormMixin
+from apps.core.forms import StyledFormMixin, field_of
 from apps.inventory.models import Item, Location
 from apps.kits.models import Kit
 
@@ -25,14 +25,17 @@ class KitForm(StyledFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Only locations no other kit uses, plus the kit's own.
-        self.fields['location'].queryset = Location.objects.filter(
+        location_field = field_of(self, 'location', forms.ModelChoiceField)
+        location_field.queryset = Location.objects.filter(
             Q(kit__isnull=True) | Q(pk=self.instance.location_id)
         ).order_by('name')
 
     def clean_location(self):
-        location = self.cleaned_data['location']
+        location = self.cleaned_data.get('location')
+
         if location is None and self.instance.pk:
             return self.instance.location  # a kit always keeps a location
+
         return location
 
 
