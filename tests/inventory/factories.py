@@ -1,6 +1,7 @@
 from decimal import Decimal
 
-import factory
+from factory.declarations import Sequence
+from factory.helpers import make_factory
 
 from apps.inventory.models import (
     Batch,
@@ -10,42 +11,25 @@ from apps.inventory.models import (
     StockMovement,
 )
 
+CategoryFactory = make_factory(
+    Category, name=Sequence(lambda n: f'category {n}')
+)
 
-class CategoryFactory(factory.Factory):
-    class Meta:
-        model = Category
+LocationFactory = make_factory(
+    Location, name=Sequence(lambda n: f'location {n}')
+)
 
-    name = factory.Sequence(lambda n: f'category {n}')
+ItemFactory = make_factory(
+    Item, name=Sequence(lambda n: f'item {n}'), category=None
+)
 
+BatchFactory = make_factory(
+    Batch, item=None, location=None, quantity=Decimal('10')
+)
 
-class LocationFactory(factory.Factory):
-    class Meta:
-        model = Location
-
-    name = factory.Sequence(lambda n: f'location {n}')
-
-
-class ItemFactory(factory.Factory):
-    class Meta:
-        model = Item
-
-    name = factory.Sequence(lambda n: f'item {n}')
-    category = None
-
-
-class BatchFactory(factory.Factory):
-    class Meta:
-        model = Batch
-
-    item = None
-    location = None
-    quantity = Decimal('10')
-
-
-class StockMovementFactory(factory.Factory):
-    class Meta:
-        model = StockMovement
-
-    batch = None
-    kind = StockMovement.Kind.ENTRY
-    quantity = Decimal('1')
+StockMovementFactory = make_factory(
+    StockMovement,
+    batch=None,
+    kind=StockMovement.Kind.ENTRY,
+    quantity=Decimal('1'),
+)
