@@ -26,7 +26,7 @@ def _kit_form_response(request, kit=None):
         data = form.cleaned_data
         if kit is None:
             kit = services.create_kit(
-                data['name'], data['description'], data['location']
+                data['name'], data.get('description', ''), data.get('location')
             )
             messages.success(request, _('Kit created.'))
         else:
@@ -56,7 +56,7 @@ def kit_update(request, pk):
     )
 
 
-def _detail_response(request, kit, *, form=None, status=HTTPStatus.OK):
+def _detail_response(request, kit, form=None, status=HTTPStatus.OK):
     context = {
         'status': services.kit_status(kit),
         'kit': kit,
@@ -79,7 +79,9 @@ def kit_item_set(request, pk):
             request, kit, form=form, status=HTTPStatus.UNPROCESSABLE_ENTITY
         )
     services.set_kit_item(
-        kit, form.cleaned_data['item'], form.cleaned_data['required_quantity']
+        kit,
+        form.cleaned_data['item'],
+        form.cleaned_data['required_quantity'],
     )
     messages.success(request, _('Kit list updated.'))
     return redirect(kit)
