@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load i18n money %}
+{% block title %}{% trans 'Insights' %} · V.A.U.L.T{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-3xl font-semibold tracking-tight">{% trans 'Insights' %}</h1>
+  <p class="mt-1 text-stone-500 dark:text-stone-400">{% trans 'What your stock does over time, worked out from the movement history.' %}</p>
+</div>
+
+<nav class="mb-6 flex flex-wrap gap-1.5" aria-label="{% trans 'Insights' %}">
+  <a href="?tab=forecast" class="tab {% if tab == 'forecast' %}tab-active{% endif %}">{% trans 'Forecast' %}</a>
+  <a href="?tab=value" class="tab {% if tab == 'value' %}tab-active{% endif %}">{% trans 'Value' %}</a>
+  <a href="?tab=activity" class="tab {% if tab == 'activity' %}tab-active{% endif %}">{% trans 'Activity' %}</a>
+</nav>
+
+{% if tab == 'forecast' %}
+<section class="card overflow-hidden">
+  <header class="border-b border-stone-200/80 px-4 py-3 dark:border-white/10">
+    <h2 class="font-semibold">{% trans 'How long each item lasts' %}</h2>
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% blocktrans %}At the pace of the last {{ window_days }} days (or since the item first moved, when that is shorter). Items nobody has used are not listed.{% endblocktrans %}</p>
+  </header>
+  {% if forecasts %}
+  <table class="w-full text-sm">
+    <thead class="text-left text-stone-500 dark:text-stone-400">
+      <tr>
+        <th class="px-4 py-2 font-medium">{% trans 'Item' %}</th>
+        <th class="px-4 py-2 text-right font-medium">{% trans 'In stock' %}</th>
+        <th class="hidden px-4 py-2 text-right font-medium sm:table-cell">{% trans 'Use per day' %}</th>
+        <th class="px-4 py-2 text-right font-medium">{% trans 'Lasts' %}</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-stone-100 dark:divide-white/5">
+      {% for forecast in forecasts %}
+      <tr>
+        <td class="px-4 py-3"><a href="{{ forecast.item.get_absolute_url }}" class="font-medium hover:underline">{{ forecast.item.name }}</a></td>
+        <td class="px-4 py-3 text-right tabular-nums">{{ forecast.total|floatformat:"-3" }} {{ forecast.item.unit_symbol }}</td>
+        <td class="hidden px-4 py-3 text-right tabular-nums text-stone-500 sm:table-cell dark:text-stone-400">{{ forecast.per_day|floatformat:2 }} {{ forecast.item.unit_symbol }}</td>
+        <td class="px-4 py-3 text-right">
+          {% if not forecast.total %}<span class="badge badge-red">{% trans 'Out of stock' %}</span>
+          {% elif forecast.days_left < 14 %}<span class="badge badge-red">{{ forecast.days_left|floatformat:0 }} {% trans 'days' %}</span>
+          {% elif forecast.days_left < 60 %}<span class="badge badge-amber">{{ forecast.days_left|floatformat:0 }} {% trans 'days' %}</span>
+          {% else %}<span class="badge badge-green">{{ forecast.days_left|floatformat:0 }} {% trans 'days' %}</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="px-4 py-12 text-center text-stone-500 dark:text-stone-400">{% trans 'No exits recorded yet, so there is no pace to project.' %}</p>
+  {% endif %}
+</section>
+
+{% elif tab == 'value' %}
+<div class="grid gap-3 sm:grid-cols-3">
+  <div class="card p-4">
+    <p class="stat-label">{% trans 'Stock value' %}</p>
+    <p class="stat-value">{{ value.total|money }}</p>
+    <p class="text-xs text-stone-500 dark:text-stone-400">{% trans 'What the batches with a price cost.' %}</p>
+  </div>
+  <div class="card p-4">
+    <p class="stat-label">{% trans 'Categories priced' %}</p>
+    <p class="stat-value">{{ value.categories|length }}</p>
+  </div>
+  <div class="card p-4 {% if value.unpriced_batches %}!border-amber-300 !bg-amber-50 dark:!border-amber-500/30 dark:!bg-amber-500/10{% endif %}">
+    <p class="stat-label">{% trans 'Batches without a price' %}</p>
+    <p class="stat-value">{{ value.unpriced_batches }}</p>
+    <p class="text-xs text-stone-500 dark:text-stone-400">{% trans 'Fill in the unit cost on the next entry to count them.' %}</p>
+  </div>
+</div>
+<section class="card mt-6 overflow-hidden">
+  <header class="border-b border-stone-200/80 px-4 py-3 dark:border-white/10"><h2 class="font-semibold">{% trans 'Value by category' %}</h2></header>
+  {% if value.categories %}
+  <ul class="divide-y divide-stone-100 dark:divide-white/5">
+    {% for category in value.categories %}
+    <li class="grid grid-cols-[minmax(0,9rem)_1fr_auto] items-center gap-4 px-4 py-3 text-sm sm:grid-cols-[minmax(0,12rem)_1fr_auto]">
+      <span class="truncate font-medium">{{ category.name }}</span>
+      <div class="track"><div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400" style="width: {{ category.percent }}%"></div></div>
+      <span class="text-right font-medium tabular-nums">{{ category.value|money }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="px-4 py-12 text-center text-stone-500 dark:text-stone-400">{% trans 'No prices yet. Add the unit cost when you register an entry.' %}</p>
+  {% endif %}
+</section>
+
+{% else %}
+<div class="grid gap-6 lg:grid-cols-3">
+  <section class="card p-5">
+    <h2 class="font-semibold">{% trans 'Movements' %}</h2>
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% blocktrans %}Last {{ recent_days }} days{% endblocktrans %}</p>
+    {% if mix.total %}
+    <div class="mt-4 flex items-center gap-5">
+      <div class="relative size-32 shrink-0">
+        <div class="ring size-full" style="background: {{ mix.gradient }}; --ring-width: 14px"></div>
+        <div class="absolute inset-0 grid place-items-center text-center"><span><span class="block text-2xl font-semibold tabular-nums">{{ mix.total }}</span><span class="block text-xs text-stone-500 dark:text-stone-400">{% trans 'total' %}</span></span></div>
+      </div>
+      <ul class="min-w-0 flex-1 space-y-1.5 text-sm">
+        {% for part in mix.parts %}
+        <li class="flex items-center justify-between gap-2"><span class="flex items-center gap-2 truncate"><span class="size-2.5 shrink-0 rounded-full" style="background: {{ part.color }}"></span>{{ part.label }}</span><span class="tabular-nums text-stone-500 dark:text-stone-400">{{ part.count }} · {{ part.percent }}%</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% else %}
+    <p class="py-10 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No movements in this period.' %}</p>
+    {% endif %}
+  </section>
+
+  <section class="card p-5">
+    <h2 class="font-semibold">{% trans 'Who recorded' %}</h2>
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% blocktrans %}Last {{ recent_days }} days{% endblocktrans %}</p>
+    {% for row in users %}
+    <div class="mt-4 first:mt-4">
+      <div class="flex justify-between text-sm"><span class="font-medium">{{ row.label }}</span><span class="tabular-nums text-stone-500 dark:text-stone-400">{{ row.count }}</span></div>
+      <div class="track mt-1.5"><div class="h-full rounded-full bg-emerald-500" style="width: {{ row.percent }}%"></div></div>
+    </div>
+    {% empty %}
+    <p class="py-10 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No movements in this period.' %}</p>
+    {% endfor %}
+  </section>
+
+  <section class="card p-5">
+    <h2 class="font-semibold">{% trans 'Most used items' %}</h2>
+    <p class="text-sm text-stone-500 dark:text-stone-400">{% blocktrans %}By exits, last {{ recent_days }} days{% endblocktrans %}</p>
+    {% for row in used %}
+    <div class="mt-4 first:mt-4">
+      <div class="flex justify-between gap-3 text-sm"><span class="truncate font-medium">{{ row.label }}</span><span class="shrink-0 tabular-nums text-stone-500 dark:text-stone-400">{{ row.count }}</span></div>
+      <div class="track mt-1.5"><div class="h-full rounded-full bg-amber-500" style="width: {{ row.percent }}%"></div></div>
+    </div>
+    {% empty %}
+    <p class="py-10 text-center text-sm text-stone-500 dark:text-stone-400">{% trans 'No exits in this period.' %}</p>
+    {% endfor %}
+  </section>
+</div>
+
+<section class="card mt-6 p-5">
+  <div class="flex flex-wrap items-baseline justify-between gap-2">
+    <div>
+      <h2 class="font-semibold">{% trans 'Activity by day' %}</h2>
+      <p class="text-sm text-stone-500 dark:text-stone-400">{% blocktrans with total=activity.total %}{{ total }} movements in the last 12 weeks. Darker days were busier.{% endblocktrans %}</p>
+    </div>
+    {% if activity.busiest_day %}<p class="text-sm text-stone-500 dark:text-stone-400">{% blocktrans with day=activity.busiest_day|date:'SHORT_DATE_FORMAT' count=activity.busiest_count %}Busiest day: {{ day }} ({{ count }}){% endblocktrans %}</p>{% endif %}
+  </div>
+  <div class="mt-4 overflow-x-auto pb-1">
+    <div class="flex w-max gap-1">
+      <div class="grid gap-1 pr-1 text-xs text-stone-400 dark:text-stone-500" aria-hidden="true">
+        {% for cell in activity.weeks.0 %}<span class="h-6 leading-6 sm:h-7 sm:leading-7">{% if forloop.counter0|divisibleby:2 %}{{ cell.day|date:'D' }}{% endif %}</span>{% endfor %}
+      </div>
+      {% for week in activity.weeks %}
+      <div class="grid gap-1">
+        {% for cell in week %}
+        <div class="size-6 rounded-md sm:size-7 heat-{{ cell.level }}{% if cell.future %} opacity-30{% endif %}" title="{{ cell.day|date:'SHORT_DATE_FORMAT' }}: {{ cell.count }}"></div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
